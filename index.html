@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IsoView — Perspectiva Isométrica</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Space+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#F2EFE9;--surface:#FEFCF8;--s2:#EAE6DF;--bd:#D4CEC4;
+  --ink:#1C1917;--ink2:#57534E;--ink3:#A8A29E;
+  --ac:#C2410C;--acl:#FEE2D5;
+  --gn:#166534;--gnl:#DCFCE7;
+  --rd:#B91C1C;--rdl:#FEE2E2;
+  --r:14px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100dvh;}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1.5px solid var(--bd);padding:0 14px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:8px;}
+.lmark{width:30px;height:30px;background:var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.lmark svg{width:16px;height:16px;}
+.ltxt{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;letter-spacing:-.5px;}
+.ltxt b{color:var(--ac);}
+.schip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--acl);color:var(--ac);}
+
+/* TABS */
+.tabs{display:flex;background:var(--s2);border-bottom:1.5px solid var(--bd);overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tbtn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px 15px 8px;border:none;background:none;cursor:pointer;color:var(--ink2);border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.tbtn:hover{color:var(--ink);}
+.tbtn.active{color:var(--ac);border-bottom-color:var(--ac);background:var(--surface);}
+
+/* CONTENT */
+#appcont{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+
+/* PRACTICE */
+#tp{flex:1;display:none;flex-direction:column;overflow:hidden;}
+#tp.active{display:flex;}
+.playout{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+@media(min-width:820px){.playout{flex-direction:row;}}
+
+/* LEFT */
+.lpanel{background:var(--surface);border-bottom:1.5px solid var(--bd);flex-shrink:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+@media(min-width:820px){.lpanel{width:330px;border-bottom:none;border-right:1.5px solid var(--bd);}}
+@media(max-width:819px){.lpanel{max-height:44vh;}}
+.lin{padding:12px;}
+
+/* RIGHT */
+.rpanel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+
+/* SECTION TITLE */
+.stit{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);margin-bottom:7px;}
+
+/* EXERCISE PICKER */
+.exrow{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.exsel{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:7px 28px 7px 10px;border:1.5px solid var(--bd);border-radius:var(--rs);background:var(--surface);color:var(--ink);cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2357534E' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;}
+.btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 12px;border:1.5px solid var(--bd);border-radius:20px;background:var(--surface);color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.btn:hover{border-color:var(--ink);color:var(--ink);}
+.btn.ac{background:var(--ac);color:#fff;border-color:var(--ac);}
+.btn.ac:hover{opacity:.85;}
+.btn.gn{background:var(--gn);color:#fff;border-color:var(--gn);}
+.btn.gn:hover{opacity:.85;}
+.btn.dn{border-color:var(--rd);color:var(--rd);}
+.btn.dn:hover{background:var(--rd);color:#fff;}
+.exdesc{font-size:12px;color:var(--ink2);line-height:1.6;padding:7px 9px;background:var(--s2);border-radius:var(--rs);margin-bottom:10px;}
+
+/* NBR 17006 — 1º Diedro view layout:
+   ┌──────────┬──────────┐
+   │   V.F.   │  V.L.E.  │  ← row 1: mesma altura (z-dimension)
+   ├──────────┼──────────┤
+   │   V.S.   │    —     │  ← row 2: mesma largura que V.F. (x-dimension)
+   └──────────┴──────────┘
+   V.F. e V.S. alinham na largura (eixo X).
+   V.F. e V.L.E. alinham na altura (eixo Z).
+*/
+.vgrid{
+  display:grid;
+  grid-template-columns:auto auto;
+  grid-template-rows:auto auto;
+  gap:2px;
+  background:var(--bd);
+  border:1.5px solid var(--bd);
+  border-radius:var(--rs);
+  overflow:hidden;
+  margin-bottom:7px;
+  width:fit-content;
+  max-width:100%;
+}
+.vcell{
+  background:var(--surface);
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  padding:4px 4px 6px;
+}
+.vcell canvas{display:block;}
+.vlbl{font-size:8px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px;white-space:nowrap;}
+.vempty{background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:10px;}
+.vnote{font-size:10px;color:var(--ink3);text-align:center;margin-bottom:10px;line-height:1.4;}
+
+/* FEEDBACK */
+.fb{margin-top:8px;padding:9px 11px;border-radius:var(--rs);font-size:12px;font-weight:500;line-height:1.5;display:none;align-items:flex-start;gap:7px;}
+.fb.show{display:flex;}
+.fb.ok{background:var(--gnl);color:var(--gn);}
+.fb.wn{background:var(--acl);color:var(--ac);}
+.fb.er{background:var(--rdl);color:var(--rd);}
+.fbico{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* TOOLBAR */
+.dtbar{background:var(--surface);border-bottom:1.5px solid var(--bd);padding:7px 10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0;}
+.tsep{width:1.5px;height:20px;background:var(--bd);flex-shrink:0;}
+.csw{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.15s;flex-shrink:0;}
+.csw:hover,.csw.active{border-color:var(--ink);}
+.zbtn{font-size:15px;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bd);border-radius:var(--rs);background:var(--surface);cursor:pointer;transition:.15s;color:var(--ink2);}
+.zbtn:hover{border-color:var(--ink);color:var(--ink);}
+.zlbl{font-size:11px;color:var(--ink3);font-family:'Space Mono',monospace;min-width:34px;text-align:center;}
+
+/* MODAL — editor de vistas e novo exercício */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:12px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--r);box-shadow:0 8px 40px rgba(0,0,0,.22);width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1.5px solid var(--bd);flex-shrink:0;}
+.modal-head h2{font-size:15px;font-weight:600;margin:0;}
+.modal-close{width:28px;height:28px;border:none;background:none;font-size:18px;cursor:pointer;color:var(--ink2);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:var(--s2);color:var(--ink);}
+.modal-body{flex:1;overflow-y:auto;padding:14px 16px;-webkit-overflow-scrolling:touch;}
+.modal-foot{padding:10px 16px;border-top:1.5px solid var(--bd);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;flex-wrap:wrap;}
+/* Tab bar inside modal */
+.mtabs{display:flex;gap:2px;margin-bottom:14px;background:var(--s2);padding:3px;border-radius:var(--rs);}
+.mtab{flex:1;font-size:12px;font-weight:500;padding:6px 8px;border:none;background:none;border-radius:6px;cursor:pointer;color:var(--ink2);transition:.12s;}
+.mtab.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+/* Grid editor */
+.veditor{display:flex;flex-direction:column;gap:12px;}
+.veditor-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;}
+.vepanel{background:var(--bg);border-radius:var(--rs);padding:10px;flex:0 0 auto;}
+.vepanel-title{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.vedgrid{display:inline-grid;gap:1px;background:var(--bd);border:1.5px solid var(--bd);border-radius:4px;overflow:hidden;cursor:pointer;user-select:none;}
+.vedcell{width:28px;height:28px;background:var(--surface);transition:.08s;}
+.vedcell.on{background:#1C1917;}
+.vedcell:hover{opacity:.75;}
+/* Resize controls */
+.resbtn{font-size:11px;padding:2px 7px;border:1px solid var(--bd);border-radius:4px;background:var(--surface);cursor:pointer;color:var(--ink2);line-height:1.4;}
+.resbtn:hover{border-color:var(--ink);color:var(--ink);}
+.resbtnrow{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px;}
+/* New exercise form */
+.frow{margin-bottom:11px;}
+.frow label{display:block;font-size:11px;font-weight:600;color:var(--ink2);margin-bottom:4px;letter-spacing:.3px;}
+.frow input,.frow textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1.5px solid var(--bd);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;transition:.12s;}
+.frow input:focus,.frow textarea:focus{border-color:var(--ac);}
+.frow textarea{resize:vertical;min-height:60px;}
+.frow .hint{font-size:10px;color:var(--ink3);margin-top:3px;}
+/* Custom exercise badge in selector */
+option.custom-ex::before{content:'★ ';}
+.ex-custom-lbl{display:inline-block;font-size:9px;font-weight:700;background:var(--acl);color:var(--ac);border-radius:10px;padding:1px 6px;margin-left:4px;vertical-align:middle;}
+.iwrap{flex:1;overflow:hidden;position:relative;background:var(--surface);touch-action:none;}
+#isoCanvas{display:block;position:absolute;top:0;left:0;cursor:crosshair;touch-action:none;}
+.solnote{text-align:center;font-size:11px;color:var(--gn);padding:4px 8px;background:var(--gnl);border-top:1px solid #bbf7d0;display:none;flex-shrink:0;}
+.btn.gn2{background:var(--gnl);color:var(--gn);border-color:#86efac;}
+.btn.gn2:hover{background:var(--gn);color:#fff;border-color:var(--gn);}
+
+/* LEARN */
+#tl{display:none;flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
+#tl.active{display:block;}
+.linner{max-width:660px;margin:0 auto;}
+.tcard{background:var(--surface);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.tcard h3{font-size:14px;font-weight:600;margin-bottom:7px;}
+.tcard p{font-size:13px;color:var(--ink2);line-height:1.7;margin-bottom:7px;}
+.hl{background:var(--acl);border-left:3px solid var(--ac);padding:9px 11px;border-radius:0 var(--rs) var(--rs) 0;font-size:12px;color:var(--ink2);line-height:1.6;margin:7px 0;}
+.nbrd{display:grid;grid-template-columns:88px 88px;grid-template-rows:46px 46px;gap:2px;background:var(--bd);border:1.5px solid var(--bd);border-radius:var(--rs);overflow:hidden;width:fit-content;margin:9px auto;}
+.nc{background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink2);text-align:center;padding:3px;line-height:1.3;}
+.nc.hi{background:var(--acl);color:var(--ac);}
+.nc.mt{background:var(--bg);color:var(--ink3);font-style:italic;font-size:10px;}
+
+/* PROGRESS */
+#tpg{display:none;flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
+#tpg.active{display:block;}
+.pginner{max-width:580px;margin:0 auto;}
+.strow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.stchip{display:flex;align-items:center;gap:5px;padding:7px 11px;background:var(--surface);border:1.5px solid var(--bd);border-radius:20px;font-size:12px;font-weight:600;color:var(--ink2);}
+.stnum{font-family:'Space Mono',monospace;font-size:14px;color:var(--ink);}
+.pgcard{background:var(--surface);border:1.5px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:12px;}
+.pgch{padding:10px 14px;border-bottom:1.5px solid var(--bd);font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);background:var(--s2);}
+.pgcb{padding:12px 14px;}
+.pgit{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px;}
+.pgit:last-child{border-bottom:none;}
+.bok{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:var(--gnl);color:var(--gn);}
+.ber{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:var(--rdl);color:var(--rd);}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="lmark">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M8 1L15 5.5V10.5L8 15L1 10.5V5.5L8 1Z" fill="white" opacity=".15"/>
+        <path d="M8 1L15 5.5L8 10L1 5.5L8 1Z" fill="white" opacity=".5"/>
+        <path d="M1 5.5V10.5L8 15V10L1 5.5Z" fill="white" opacity=".75"/>
+        <path d="M15 5.5V10.5L8 15V10L15 5.5Z" fill="white"/>
+      </svg>
+    </div>
+    <span class="ltxt">Iso<b>View</b></span>
+  </div>
+  <span class="schip" id="scoreChip">⭐ 0 pts</span>
+</header>
+
+<div class="tabs">
+  <button class="tbtn active" onclick="showTab('tp')">✏️ Praticar</button>
+  <button class="tbtn" onclick="showTab('tl')">📚 Aprender</button>
+  <button class="tbtn" onclick="showTab('tpg')">📊 Progresso</button>
+</div>
+
+<div id="appcont">
+
+<!-- ══════════ PRACTICE ══════════ -->
+<div id="tp" class="active">
+<div class="playout">
+
+  <div class="lpanel">
+  <div class="lin">
+    <div class="stit">Exercício</div>
+    <div class="exrow">
+      <select class="exsel" id="exSel" onchange="selEx(this.value)"></select>
+      <button class="btn ac" onclick="nextEx()">→</button>
+    </div>
+    <div class="exdesc" id="exDesc">—</div>
+    <div id="customBadge" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:20px;padding:3px 9px;margin-bottom:8px;width:fit-content;">
+      ✎ Gabarito personalizado
+    </div>
+
+    <div class="stit" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>Vistas Ortográficas — NBR 17006</span>
+      <button class="btn" style="font-size:10px;padding:3px 9px;" onclick="openViewEditor()">✎ Editar</button>
+    </div>
+    <!-- NBR 17006 / 1º Diedro correto:
+         VF  | VLE
+         VS  |  —        -->
+    <div class="vgrid">
+      <div class="vcell"><div class="vlbl">V.F. — Frontal</div><canvas id="cvF"></canvas></div>
+      <div class="vcell"><div class="vlbl">V.L.E. — Lat. Esq.</div><canvas id="cvL"></canvas></div>
+      <div class="vcell"><div class="vlbl">V.S. — Superior</div><canvas id="cvT"></canvas></div>
+      <div class="vempty">—</div>
+    </div>
+    <p class="vnote">NBR 17006: V.S. abaixo da V.F. · V.L.E. à direita da V.F.</p>
+
+    <div class="fb" id="fbBox">
+      <span class="fbico" id="fbIco">✅</span>
+      <span id="fbTxt"></span>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpanel">
+    <div class="dtbar">
+      <button class="btn active" id="btnLine" onclick="setTool('line')">
+        <svg width="12" height="12" viewBox="0 0 12 12"><line x1="1" y1="11" x2="11" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Linha
+      </button>
+      <button class="btn" id="btnErase" onclick="setTool('erase')">
+        <svg width="12" height="12" viewBox="0 0 13 13"><rect x="1" y="5" width="11" height="6" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="4" y1="5" x2="3" y2="1" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="5" x2="10" y2="1" stroke="currentColor" stroke-width="1.5"/></svg>Apagar
+      </button>
+      <div class="tsep"></div>
+      <div class="csw active" id="sw0" style="background:#1C1917" onclick="setColor('#1C1917',0)"></div>
+      <div class="csw" id="sw1" style="background:#1E40AF" onclick="setColor('#1E40AF',1)"></div>
+      <div class="csw" id="sw2" style="background:#B91C1C" onclick="setColor('#B91C1C',2)"></div>
+      <div class="csw" id="sw3" style="background:#166534" onclick="setColor('#166534',3)"></div>
+      <div class="tsep"></div>
+      <div class="zbtn" onclick="adjZoom(-.25)" title="Zoom −">−</div>
+      <span class="zlbl" id="zlbl">100%</span>
+      <div class="zbtn" onclick="adjZoom(.25)" title="Zoom +">+</div>
+      <div class="zbtn" onclick="resetView()" title="Centralizar">⌖</div>
+      <div class="tsep"></div>
+      <button class="btn" onclick="undoLine()">↩</button>
+      <button class="btn dn" onclick="clearDraw()">🗑</button>
+      <div class="tsep"></div>
+      <button class="btn gn" onclick="checkAns()">✓ Verificar</button>
+      <button class="btn" id="btnSol" onclick="showSol()">👁 Gabarito</button>
+      <button class="btn" id="btnEdit" style="display:none" onclick="editSol()">✏️ Editar</button>
+      <button class="btn gn" id="btnSave" style="display:none" onclick="saveSol()">💾 Salvar</button>
+      <button class="btn" id="btnReset" style="display:none;border-color:#d97706;color:#d97706;" onclick="resetSol()">↺ Original</button>
+    </div>
+    <div class="iwrap" id="isoWrap"><canvas id="isoCanvas"></canvas></div>
+    <div class="solnote" id="solNote">👁 Gabarito em verde · clique <b>✏️ Editar</b> para modificar ou 🗑 para recomeçar</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════ MODAL: EDITOR DE VISTAS / NOVO EXERCÍCIO ══════════ -->
+<div class="modal-overlay" id="veModal" onclick="if(event.target===this)closeViewEditor()">
+<div class="modal">
+  <div class="modal-head">
+    <h2 id="veModalTitle">✎ Editar Vistas Ortográficas</h2>
+    <button class="modal-close" onclick="closeViewEditor()">✕</button>
+  </div>
+  <div class="modal-body">
+    <!-- Tab bar -->
+    <div class="mtabs">
+      <button class="mtab active" id="mtabEdit" onclick="switchMTab('edit')">✎ Editar Vistas</button>
+      <button class="mtab" id="mtabNew" onclick="switchMTab('new')">＋ Novo Exercício</button>
+    </div>
+
+    <!-- ─── TAB: EDITAR VISTAS ─── -->
+    <div id="mtabEditPane">
+      <p style="font-size:12px;color:var(--ink2);margin-bottom:12px;line-height:1.6;">
+        Clique nas células para alternar preenchido/vazio. Use os botões <b>+ −</b> para adicionar ou remover linhas e colunas em cada vista.
+      </p>
+      <div class="veditor">
+        <!-- V.F. e V.L.E. lado a lado (compartilham altura = z) -->
+        <div class="veditor-row">
+          <div class="vepanel" id="vepF">
+            <div class="vepanel-title">
+              <span>V.F. — Frontal <span style="font-weight:400;color:var(--ink3)">(cols=X, linhas=Z)</span></span>
+            </div>
+            <div class="vedgrid" id="vegF"></div>
+            <div class="resbtnrow">
+              <button class="resbtn" onclick="veResize('F','addCol')">+ col</button>
+              <button class="resbtn" onclick="veResize('F','delCol')">− col</button>
+              <button class="resbtn" onclick="veResize('F','addRow')">+ lin</button>
+              <button class="resbtn" onclick="veResize('F','delRow')">− lin</button>
+            </div>
+          </div>
+          <div class="vepanel" id="vepL">
+            <div class="vepanel-title">
+              <span>V.L.E. — Lat. Esq. <span style="font-weight:400;color:var(--ink3)">(cols=Y, linhas=Z)</span></span>
+            </div>
+            <div class="vedgrid" id="vegL"></div>
+            <div class="resbtnrow">
+              <button class="resbtn" onclick="veResize('L','addCol')">+ col</button>
+              <button class="resbtn" onclick="veResize('L','delCol')">− col</button>
+              <button class="resbtn" onclick="veResize('L','addRow')">+ lin</button>
+              <button class="resbtn" onclick="veResize('L','delRow')">− lin</button>
+            </div>
+          </div>
+        </div>
+        <!-- V.S. (compartilha cols=X com V.F.) -->
+        <div class="veditor-row">
+          <div class="vepanel" id="vepT">
+            <div class="vepanel-title">
+              <span>V.S. — Superior <span style="font-weight:400;color:var(--ink3)">(cols=X, linhas=Y)</span></span>
+            </div>
+            <div class="vedgrid" id="vegT"></div>
+            <div class="resbtnrow">
+              <button class="resbtn" onclick="veResize('T','addCol')">+ col</button>
+              <button class="resbtn" onclick="veResize('T','delCol')">− col</button>
+              <button class="resbtn" onclick="veResize('T','addRow')">+ lin</button>
+              <button class="resbtn" onclick="veResize('T','delRow')">− lin</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="veEditNote" style="margin-top:12px;font-size:11px;color:var(--ink3);line-height:1.5;"></div>
+    </div>
+
+    <!-- ─── TAB: NOVO EXERCÍCIO ─── -->
+    <div id="mtabNewPane" style="display:none;">
+      <p style="font-size:12px;color:var(--ink2);margin-bottom:12px;line-height:1.6;">
+        Crie um novo exercício personalizado. As vistas são editadas na aba <b>✎ Editar Vistas</b> após a criação.
+      </p>
+      <div class="frow">
+        <label>Nome do exercício</label>
+        <input type="text" id="newExName" placeholder="Ex: Bloco em T duplo" maxlength="60">
+      </div>
+      <div class="frow">
+        <label>Descrição / instrução</label>
+        <textarea id="newExDesc" placeholder="Ex: Sólido em forma de T visto de cima, com dois degraus na base."></textarea>
+      </div>
+      <div class="frow">
+        <label>Dimensões iniciais das vistas</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <label style="font-size:12px;display:flex;align-items:center;gap:4px;color:var(--ink);">
+            Largura (X) <input type="number" id="newExX" value="3" min="1" max="10" style="width:50px;">
+          </label>
+          <label style="font-size:12px;display:flex;align-items:center;gap:4px;color:var(--ink);">
+            Prof. (Y) <input type="number" id="newExY" value="3" min="1" max="10" style="width:50px;">
+          </label>
+          <label style="font-size:12px;display:flex;align-items:center;gap:4px;color:var(--ink);">
+            Altura (Z) <input type="number" id="newExZ" value="3" min="1" max="10" style="width:50px;">
+          </label>
+        </div>
+        <p class="hint">V.F.: X×Z · V.S.: X×Y · V.L.E.: Y×Z</p>
+      </div>
+      <div id="newExError" style="display:none;color:var(--rd);font-size:12px;margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <div class="modal-foot">
+    <button class="btn" onclick="closeViewEditor()">Cancelar</button>
+    <button class="btn" id="veBtnReset" onclick="veResetGrids()" style="border-color:#d97706;color:#d97706;">↺ Original</button>
+    <button class="btn gn" id="veBtnSave" onclick="veSaveEdit()">💾 Salvar Vistas</button>
+    <button class="btn gn" id="veBtnCreate" onclick="veCreateEx()" style="display:none;">＋ Criar Exercício</button>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ LEARN ══════════ -->
+<div id="tl">
+<div class="linner">
+  <div class="tcard">
+    <h3>🔲 Vistas Ortográficas</h3>
+    <p>As vistas ortográficas são projeções planas do objeto 3D observado perpendicularmente a cada face. Três vistas são suficientes para descrever completamente a maioria dos sólidos:</p>
+    <div class="hl"><strong>V.F. (Vista Frontal):</strong> largura × altura<br><strong>V.S. (Vista Superior):</strong> largura × profundidade<br><strong>V.L.E. (Vista Lateral Esq.):</strong> profundidade × altura</div>
+  </div>
+  <div class="tcard">
+    <h3>📐 Disposição NBR 17006 — 1º Diedro</h3>
+    <div class="nbrd">
+      <div class="nc hi">V.F.<br>Frontal</div><div class="nc hi">V.L.E.<br>Lat. Esq.</div>
+      <div class="nc hi">V.S.<br>Superior</div><div class="nc mt">—</div>
+    </div>
+    <div class="hl">A <strong>Vista Superior fica abaixo</strong> da Frontal. A <strong>Vista Lateral Esquerda fica à direita</strong> da Frontal. As vistas compartilham dimensões e se alinham entre si.</div>
+  </div>
+  <div class="tcard">
+    <h3>📦 Perspectiva Isométrica</h3>
+    <p>Os três eixos formam <strong>120° entre si</strong>. Os eixos horizontais fazem 30° com a horizontal; o eixo vertical é perpendicular. As medidas são preservadas nos três eixos.</p>
+    <p>Na malha isométrica, arraste o cursor para qualquer ponto da grade e clique para iniciar uma aresta. Use zoom e arraste com dois dedos (ou clique direito) para navegar.</p>
+    <div class="hl">✅ Desenhe <strong>apenas as arestas visíveis</strong> — não trace arestas ocultas na perspectiva isométrica básica.</div>
+    <canvas id="exAxes" width="220" height="110" style="display:block;margin:8px auto;border-radius:6px;background:#FEFCF8;"></canvas>
+  </div>
+  <div class="tcard">
+    <h3>🧱 Exemplos</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><canvas id="ex1" width="150" height="110" style="display:block;margin:0 auto;border-radius:6px;background:#FEFCF8;"></canvas><p style="text-align:center;font-size:10px;color:var(--ink3);margin-top:4px;">Paralelepípedo (arestas visíveis)</p></div>
+      <div><canvas id="ex2" width="150" height="110" style="display:block;margin:0 auto;border-radius:6px;background:#FEFCF8;"></canvas><p style="text-align:center;font-size:10px;color:var(--ink3);margin-top:4px;">Degrau duplo</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ PROGRESS ══════════ -->
+<div id="tpg">
+<div class="pginner">
+  <div class="strow">
+    <div class="stchip">Tentativas: <span class="stnum" id="stA">0</span></div>
+    <div class="stchip">✅ Corretos: <span class="stnum" id="stC">0</span></div>
+    <div class="stchip">⭐ Pontos: <span class="stnum" id="stS">0</span></div>
+  </div>
+  <div class="pgcard">
+    <div class="pgch">Histórico</div>
+    <div class="pgcb" id="pgList"><div style="color:var(--ink3);font-size:13px;text-align:center;padding:14px;">Nenhum exercício concluído ainda.</div></div>
+  </div>
+  <div class="pgcard">
+    <div class="pgch">Dicas</div>
+    <div class="pgcb" id="pgTips"><p style="font-size:13px;color:var(--ink2);">Complete exercícios para receber dicas.</p></div>
+  </div>
+</div>
+</div>
+
+</div><!-- /appcont -->
+
+<script>
+'use strict';
+// ══════════════════════════════════════════════════════════════════
+// ISOMETRIC COORDINATE CONVENTION
+// ══════════════════════════════════════════════════════════════════
+// x = largura    (eixo ESQUERDO a 30°)  — V.F. colunas
+// y = profundidade (eixo DIREITO a 30°) — V.L.E. colunas / V.S. linhas
+// z = altura     (eixo VERTICAL 90°)    — V.F. e V.L.E. linhas
+//
+// Projeção: canvas_x = panX + (y-x)*u*cos30
+//           canvas_y = panY + (y+x)*u*sin30 - z*u
+//   → X vai para ESQUERDA (face frontal à esq do iso)
+//   → Y vai para DIREITA  (face lateral à dir do iso)
+//   → Z vai para CIMA
+//
+// FACES VISÍVEIS (observador em diagonal frente-direita-cima):
+//   ① Face FRONTAL  y = y0   → face ESQUERDA do isométrico
+//   ② Face LATERAL  x = x1   → face DIREITA do isométrico
+//   ③ Face TOPO     z = z1   → face SUPERIOR do isométrico
+// ══════════════════════════════════════════════════════════════════
+
+// ── Arestas visíveis de um paralelepípedo sólido ──────────────────
+// Retorna APENAS as arestas das 3 faces visíveis (sem ocultas):
+//   ① Face frontal  y=y0  (4 arestas)
+//   ② Face lateral  x=x1  (3 arestas novas)
+//   ③ Face topo     z=z1  (2 arestas novas)
+//   Total único: 9 arestas por bloco simples
+function visEdgesBox(x0,y0,z0, x1,y1,z1){
+  return[
+    // ① FACE FRONTAL (y = y0) — aparece à ESQUERDA no isométrico
+    [[x0,y0,z0],[x1,y0,z0]], // aresta base inferior (horizontal)
+    [[x0,y0,z1],[x1,y0,z1]], // aresta topo (horizontal)
+    [[x0,y0,z0],[x0,y0,z1]], // aresta vertical esquerda
+    [[x1,y0,z0],[x1,y0,z1]], // aresta vertical direita
+    // ② FACE LATERAL (x = x1) — aparece à DIREITA no isométrico
+    [[x1,y0,z0],[x1,y1,z0]], // aresta base lateral (vai para o fundo)
+    [[x1,y0,z1],[x1,y1,z1]], // aresta topo lateral
+    [[x1,y1,z0],[x1,y1,z1]], // aresta vertical do fundo
+    // ③ FACE TOPO (z = z1) — aparece no TOPO do isométrico
+    [[x0,y0,z1],[x0,y1,z1]], // aresta esquerda do topo
+    [[x0,y1,z1],[x1,y1,z1]], // aresta fundo do topo
+    // Aresta de fundo da base — visível abaixo da face lateral
+    [[x1,y1,z0],[x0,y1,z0]],
+  ];
+}
+
+// ── Deduplication helper ──────────────────────────────────────────
+function dedup(edges){
+  const seen=new Set();
+  return edges.filter(e=>{
+    const k=[...e[0],...e[1]].join(',');
+    const kr=[...e[1],...e[0]].join(',');
+    if(seen.has(k)||seen.has(kr))return false;
+    seen.add(k);return true;
+  });
+}
+
+// ── Arestas visíveis de dois blocos combinados ───────────────────
+function combineVis(...edgeSets){
+  return dedup(edgeSets.flat());
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 100 EXERCISES
+// Cada exercício define:
+//   front: grade [linhas][colunas] — colunas=x (largura), linhas de cima=z alto
+//   top:   grade [linhas][colunas] — colunas=x (largura), linhas de cima=y (prof)
+//   left:  grade [linhas][colunas] — colunas=y (prof), linhas de cima=z alto
+//   edges: array de [[x0,y0,z0],[x1,y1,z1]] arestas visíveis
+// ══════════════════════════════════════════════════════════════════
+const EX=[
+// ─── GRUPO 1: Blocos Simples (1–10) ───────────────────────────────
+{id:1,name:'Cubo 2×2×2',
+ desc:'Cubo com 2 unidades em cada dimensão. Três faces visíveis iguais.',
+ front:[[1,1],[1,1]],top:[[1,1],[1,1]],left:[[1,1],[1,1]],
+ edges:visEdgesBox(0,0,0,2,2,2)},
+
+{id:2,name:'Paralelepípedo Largo 4×2×1',
+ desc:'Caixa baixa e larga. Pratique proporções no eixo X.',
+ front:[[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1]],
+ edges:visEdgesBox(0,0,0,4,2,1)},
+
+{id:3,name:'Torre 1×1×4',
+ desc:'Bloco alto e fino. Concentre-se na proporção do eixo Z.',
+ front:[[1],[1],[1],[1]],top:[[1]],left:[[1],[1],[1],[1]],
+ edges:visEdgesBox(0,0,0,1,1,4)},
+
+{id:4,name:'Bloco 3×1×3',
+ desc:'Alto e fino na profundidade. Treino de eixo Y reduzido.',
+ front:[[1,1,1],[1,1,1],[1,1,1]],top:[[1,1,1]],left:[[1],[1],[1]],
+ edges:visEdgesBox(0,0,0,3,1,3)},
+
+{id:5,name:'Bloco 4×3×2',
+ desc:'Paralelepípedo intermediário com todas dimensões diferentes.',
+ front:[[1,1,1,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[1,1,1],[1,1,1]],
+ edges:visEdgesBox(0,0,0,4,3,2)},
+
+{id:6,name:'Cubo 3×3×3',
+ desc:'Cubo grande com 3 unidades em cada eixo.',
+ front:[[1,1,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1,1],[1,1,1],[1,1,1]],
+ edges:visEdgesBox(0,0,0,3,3,3)},
+
+{id:7,name:'Bloco 2×4×1',
+ desc:'Plataforma alongada no eixo Y.',
+ front:[[1,1]],top:[[1,1],[1,1],[1,1],[1,1]],left:[[1],[1],[1],[1]],
+ edges:visEdgesBox(0,0,0,2,4,1)},
+
+{id:8,name:'Bloco 1×3×2',
+ desc:'Bloco fino e alto com profundidade tripla.',
+ front:[[1],[1]],top:[[1],[1],[1]],left:[[1,1,1],[1,1,1]],
+ edges:visEdgesBox(0,0,0,1,3,2)},
+
+{id:9,name:'Bloco 5×1×1',
+ desc:'Barra longa e fina — apenas 1 unidade de altura e profundidade.',
+ front:[[1,1,1,1,1]],top:[[1,1,1,1,1]],left:[[1]],
+ edges:visEdgesBox(0,0,0,5,1,1)},
+
+{id:10,name:'Bloco 2×2×4',
+ desc:'Pilar quadrado e alto com base 2×2.',
+ front:[[1,1],[1,1],[1,1],[1,1]],top:[[1,1],[1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
+ edges:visEdgesBox(0,0,0,2,2,4)},
+
+// ─── GRUPO 2: Degraus e Rampas (11–20) ────────────────────────────
+{id:11,name:'Degrau Simples',
+ desc:'Um degrau. Vista frontal em "L" invertido.',
+ front:[[1,1],[0,1]],top:[[1,1],[1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(1,0,1,2,2,2))},
+
+{id:12,name:'Degrau Duplo',
+ desc:'Dois degraus ascendentes.',
+ front:[[1,0,0],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,0,1],[0,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,2,3,2),visEdgesBox(0,0,2,1,3,3))},
+
+{id:13,name:'Degrau Triplo',
+ desc:'Três degraus — escada com 4 níveis de altura.',
+ front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
+ top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
+ left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,3,3,2),visEdgesBox(0,0,2,2,3,3),visEdgesBox(0,0,3,1,3,4))},
+
+{id:14,name:'Degrau Largo',
+ desc:'Degrau com largura dupla em cada nível.',
+ front:[[1,1,0,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,2,2,2))},
+
+{id:15,name:'Degrau Fundo Duplo',
+ desc:'Degrau simples com profundidade 3.',
+ front:[[1,1],[0,1]],top:[[1,1],[1,1],[1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,3,1),visEdgesBox(1,0,1,2,3,2))},
+
+{id:16,name:'Escada 4 Degraus × 3 Prof.',
+ desc:'Escada com 4 degraus. Cada degrau tem 1×3×1.',
+ front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
+ top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
+ left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,3,3,2),visEdgesBox(0,0,2,2,3,3),visEdgesBox(0,0,3,1,3,4))},
+
+{id:17,name:'Pirâmide 3 Degraus',
+ desc:'Pirâmide degraus 5×3, 3×3, 1×3.',
+ front:[[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1]],
+ top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
+ left:[[0,0,1],[0,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(1,0,1,4,3,2),visEdgesBox(2,0,2,3,3,3))},
+
+{id:18,name:'Cunha 3×2',
+ desc:'Degrau diagonal — rampa em dois níveis sobre base 3×2.',
+ front:[[1,0,0],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,0,1],[0,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,2,2,2),visEdgesBox(0,0,2,1,2,3))},
+
+{id:19,name:'Degrau Invertido',
+ desc:'Degrau descendo da esquerda para a direita.',
+ front:[[0,1],[1,1]],top:[[1,1],[1,1]],left:[[0,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(0,0,1,1,2,2))},
+
+{id:20,name:'Rampa Suave 4 Níveis',
+ desc:'Quatro blocos 1×2×1 empilhados em escada ascendente.',
+ front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
+ top:[[1,1,1,1],[1,1,1,1]],
+ left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,3,2,2),visEdgesBox(0,0,2,2,2,3),visEdgesBox(0,0,3,1,2,4))},
+
+// ─── GRUPO 3: Formas em L, T, U, H (21–35) ────────────────────────
+{id:21,name:'Bloco em L (planta)',
+ desc:'Vista superior em "L". Dois blocos unidos em ângulo reto.',
+ front:[[1,1,1],[1,0,0]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,3,1,2))},
+
+{id:22,name:'Bloco em T (planta)',
+ desc:'Vista superior em "T". Barra horizontal + vertical.',
+ front:[[1,1,1],[0,1,0]],top:[[1,1,1],[0,1,0],[0,1,0]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,3,1,2),visEdgesBox(1,1,0,2,3,1))},
+
+{id:23,name:'Bloco em U (frontal)',
+ desc:'Vista frontal em "U" — dois pilares ligados por base.',
+ front:[[1,0,1],[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3),visEdgesBox(2,0,1,3,2,3))},
+
+{id:24,name:'Bloco em H (frontal)',
+ desc:'Vista frontal em "H" — dois pilares conectados por travessa central.',
+ front:[[1,0,1],[1,1,1],[1,0,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(1,0,1,2,2,2))},
+
+{id:25,name:'Suporte em L Vertical',
+ desc:'Perfil em L: pilar 1×2×3 + base 3×2×1.',
+ front:[[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,0],[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3))},
+
+{id:26,name:'Suporte em L Invertido',
+ desc:'Perfil em L invertido: pilar direito + base esquerda.',
+ front:[[0,0,1],[0,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,1],[0,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(2,0,1,3,2,3))},
+
+{id:27,name:'Cruz (planta)',
+ desc:'Planta em forma de cruz: barra 1×3 + barra 3×1.',
+ front:[[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[1,1,1]],
+ edges:combineVis(visEdgesBox(1,0,0,2,3,1),visEdgesBox(0,1,0,3,2,1))},
+
+{id:28,name:'Bloco em Z (planta)',
+ desc:'Vista superior em "Z" — blocos nos cantos opostos conectados.',
+ front:[[1,1,1],[1,1,1]],top:[[1,1,0],[1,1,1],[0,1,1]],left:[[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,2),visEdgesBox(0,1,0,3,2,2),visEdgesBox(1,2,0,3,3,2))},
+
+{id:29,name:'Bloco em S (planta)',
+ desc:'Vista superior em "S" — variação do bloco Z.',
+ front:[[1,1,1],[1,1,1]],top:[[0,1,1],[1,1,1],[1,1,0]],left:[[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(1,0,0,3,2,2),visEdgesBox(0,1,0,3,2,2),visEdgesBox(0,2,0,2,3,2))},
+
+{id:30,name:'U Deitado (planta)',
+ desc:'Vista superior em "U" — dois blocos laterais com base frontal.',
+ front:[[1,1,1],[1,1,1]],top:[[1,0,1],[1,1,1]],left:[[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(1,0,0,2,1,2))},
+
+{id:31,name:'Bloco em F (frontal)',
+ desc:'Vista frontal em "F" — duas prateleiras à esquerda.',
+ front:[[1,1,1],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,2,2,2),visEdgesBox(0,0,2,3,2,3))},
+
+{id:32,name:'Bloco em E (frontal)',
+ desc:'Vista frontal em "E" — três prateleiras horizontais.',
+ front:[[1,1,1],[1,0,0],[1,1,1],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,2,3,2,3),visEdgesBox(0,0,4,3,2,5))},
+
+{id:33,name:'Bloco em C (frontal)',
+ desc:'Vista frontal em "C" — abertura central à direita.',
+ front:[[1,1,1],[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,3,3,2,4))},
+
+{id:34,name:'Bloco em P (frontal)',
+ desc:'Vista frontal em "P" — fechado no topo e esquerda.',
+ front:[[1,1,1],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,2,2,3),visEdgesBox(0,0,2,3,2,3))},
+
+{id:35,name:'Bloco em I (frontal)',
+ desc:'Vista frontal em "I" — base, topo e pilar central.',
+ front:[[1,1,1],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(1,0,1,2,2,2),visEdgesBox(0,0,2,3,2,3))},
+
+// ─── GRUPO 4: Recortes e Entalhes (36–50) ─────────────────────────
+{id:36,name:'Recorte Canto Sup. Dir.',
+ desc:'Bloco 3×2×3 com recorte 1×2×1 no canto superior direito frontal.',
+ front:[[1,1,0],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(0,0,2,2,2,3))},
+
+{id:37,name:'Recorte Canto Sup. Esq.',
+ desc:'Bloco 3×2×3 com recorte 1×2×1 no canto superior esquerdo.',
+ front:[[0,1,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(1,0,2,3,2,3))},
+
+{id:38,name:'Entalhe Central Frontal',
+ desc:'Bloco 3×2×3 com entalhe 1×2×1 no centro da face frontal.',
+ front:[[1,0,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(0,0,2,1,2,3),visEdgesBox(2,0,2,3,2,3))},
+
+{id:39,name:'Entalhe Lateral Direito',
+ desc:'Bloco 3×3×2 com recorte no lado direito (x=2 a 3).',
+ front:[[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1],[0,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,2,3,2))},
+
+{id:40,name:'Dois Recortes Topo',
+ desc:'Bloco 4×2×2 com dois recortes 1×2×1 nos cantos do topo.',
+ front:[[0,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(1,0,1,3,2,2))},
+
+{id:41,name:'Recorte Profundo',
+ desc:'Bloco 3×3×2 com recorte 1×1×2 no canto frontal esquerdo.',
+ front:[[0,1,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(1,0,0,3,3,2))},
+
+{id:42,name:'Chanfro Direito',
+ desc:'Bloco 2×2×3 com chanfro escalonado à direita.',
+ front:[[1,1],[1,1],[1,1]],top:[[1,1],[1,1]],left:[[0,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,2),visEdgesBox(0,0,2,2,2,3))},
+
+{id:43,name:'Bloco com Pilastra',
+ desc:'Base 3×2×1 com pilastra 1×2×3 na extremidade esquerda.',
+ front:[[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,1],[0,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3))},
+
+{id:44,name:'Bloco Duplo Recorte',
+ desc:'Bloco 4×2×3 com recorte 1×2×1 em cada extremidade do topo.',
+ front:[[0,1,1,0],[1,1,1,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,2),visEdgesBox(1,0,2,3,2,3))},
+
+{id:45,name:'Recorte de Canto Inferior',
+ desc:'Bloco 3×2×3 com recorte 1×2×1 no canto inferior frontal direito.',
+ front:[[1,1,1],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,3),visEdgesBox(2,0,1,3,2,3))},
+
+{id:46,name:'Pilar com Base Alargada',
+ desc:'Pilar 1×1×3 sobre base 3×3×1 no canto frontal esquerdo.',
+ front:[[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,0,1],[0,0,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,1,1,3))},
+
+{id:47,name:'Dois Pilares sobre Base',
+ desc:'Base 4×2×1 com pilares 1×2×3 nos cantos esquerdo e direito.',
+ front:[[1,0,0,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,1,2,3),visEdgesBox(3,0,1,4,2,3))},
+
+{id:48,name:'Bloco Terraço',
+ desc:'Dois andares em "L" — térreo 3×2×1 + primeiro 2×2×1.',
+ front:[[0,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(1,0,1,3,2,2))},
+
+{id:49,name:'Sólido com Varanda',
+ desc:'Bloco 3×3×2 com bloco 3×1×1 avançando na frente.',
+ front:[[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(0,3,0,3,4,1))},
+
+{id:50,name:'Bloco com Nicho Central',
+ desc:'Bloco 3×3×3 com recorte central na face frontal.',
+ front:[[1,1,1],[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1,1],[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,1,3,2),visEdgesBox(2,0,1,3,3,2),visEdgesBox(0,0,2,3,3,3))},
+
+// ─── GRUPO 5: Compostos e Combinados (51–65) ──────────────────────
+{id:51,name:'Mesa Simples',
+ desc:'Tampo 4×3×1 sobre quatro pés 1×1×2 nos cantos.',
+ front:[[1,0,0,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,1,1,3),visEdgesBox(3,0,1,4,1,3),visEdgesBox(0,2,1,1,3,3),visEdgesBox(3,2,1,4,3,3))},
+
+{id:52,name:'Banco Simples',
+ desc:'Assento 3×2×1 sobre dois pés 1×2×2.',
+ front:[[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3),visEdgesBox(2,0,1,3,2,3))},
+
+{id:53,name:'Arco Simples',
+ desc:'Dois pilares 1×2×3 ligados por viga 1×2×1 no topo.',
+ front:[[1,0,1],[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(1,0,2,2,2,3))},
+
+{id:54,name:'Caixa sem Tampa',
+ desc:'Caixa 3×3×2 com interior vazio.',
+ front:[[1,1,1],[1,0,1]],top:[[1,1,1],[1,0,1],[1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,1,3,2),visEdgesBox(2,0,1,3,3,2))},
+
+{id:55,name:'Base + Pilar Central',
+ desc:'Plataforma 3×3×1 com pilar 1×1×2 no centro.',
+ front:[[0,1,0],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,3))},
+
+{id:56,name:'Dois Cubos Empilhados',
+ desc:'Cubo 2×2×2 sobre outro cubo 2×2×2.',
+ front:[[1,1],[1,1],[1,1],[1,1]],top:[[1,1],[1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
+ edges:visEdgesBox(0,0,0,2,2,4)},
+
+{id:57,name:'Dois Blocos Lado a Lado',
+ desc:'Bloco 2×2×3 junto a bloco 2×2×2 — alturas diferentes.',
+ front:[[1,1],[1,1],[0,1]],top:[[1,1],[1,1]],left:[[1,1],[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,2),visEdgesBox(2,0,0,4,2,3))},
+
+{id:58,name:'Plataforma com Caixote',
+ desc:'Base 4×3×1 com caixote 2×2×2 centralizado sobre ela.',
+ front:[[0,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(1,0,1,3,3,3))},
+
+{id:59,name:'Escada com Patamar',
+ desc:'Dois degraus + patamar horizontal no topo.',
+ front:[[0,1,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,1,1],[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,3,3,2),visEdgesBox(0,0,2,2,3,3))},
+
+{id:60,name:'Caixote com Divisória',
+ desc:'Bloco 4×2×3 com divisória vertical x=2.',
+ front:[[1,0,0,1],[1,1,1,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,3),visEdgesBox(2,0,0,2,2,3))},
+
+{id:61,name:'Porta Simples',
+ desc:'Quadro retangular 3×1×4 com abertura 1×1×2 na base central.',
+ front:[[1,0,1],[1,0,1],[1,1,1],[1,1,1]],top:[[1,1,1]],left:[[1],[1],[1],[1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,1,2),visEdgesBox(0,0,2,1,1,4),visEdgesBox(2,0,2,3,1,4))},
+
+{id:62,name:'Pirâmide 4 Degraus',
+ desc:'Pirâmide escalonada 4 níveis: 7,5,3,1 de largura.',
+ front:[[0,0,0,1,0,0,0],[0,0,1,1,1,0,0],[0,1,1,1,1,1,0],[1,1,1,1,1,1,1]],
+ top:[[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
+ left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,7,4,1),visEdgesBox(1,0,1,6,4,2),visEdgesBox(2,0,2,5,4,3),visEdgesBox(3,0,3,4,4,4))},
+
+{id:63,name:'Torre com Chapéu',
+ desc:'Torre 1×1×3 com bloco 3×3×1 no topo.',
+ front:[[0,1,0],[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,4))},
+
+{id:64,name:'Dois Blocos em L',
+ desc:'Bloco em L com o mesmo perfil em dois níveis de altura.',
+ front:[[1,1,1],[1,1,1],[1,0,0],[1,0,0]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,0],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(0,0,2,1,2,4))},
+
+{id:65,name:'Bloco Composto Simétrico',
+ desc:'Dois blocos em L simétricos formando um "W" em planta.',
+ front:[[1,1,1,1],[1,0,0,1]],top:[[1,0,0,1],[1,1,1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,1,1,1,2,2),visEdgesBox(3,1,1,4,2,2))},
+
+// ─── GRUPO 6: Construções Técnicas (66–80) ────────────────────────
+{id:66,name:'Suporte em T',
+ desc:'Base horizontal 3×1×1 + pilar vertical central 1×1×3.',
+ front:[[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1]],left:[[1],[1],[1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,1,1),visEdgesBox(1,0,1,2,1,3))},
+
+{id:67,name:'Perfil H Deitado',
+ desc:'Seção H deitada: duas bases e pilar central vertical.',
+ front:[[1,1,1],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(1,0,1,2,2,2),visEdgesBox(0,0,2,3,2,3))},
+
+{id:68,name:'Bloco Chanfrado Bilateral',
+ desc:'Bloco 3×2×3 com chanfro escalonado em ambos lados do topo.',
+ front:[[0,1,0],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(1,0,2,2,2,3))},
+
+{id:69,name:'Plataforma com Ressalto',
+ desc:'Base 4×2×1 com ressalto 2×2×1 no centro.',
+ front:[[0,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(1,0,1,3,2,2))},
+
+{id:70,name:'Bloco com Recesso Traseiro',
+ desc:'Bloco 3×3×2 com recesso 1×1×2 no fundo (y=2 a 3).',
+ front:[[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,0],[1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(2,1,0,3,2,2))},
+
+{id:71,name:'Caixote Aberto Frontal',
+ desc:'Caixa 3×2×3 aberta na frente — paredes laterais, topo e fundo.',
+ front:[[1,0,1],[1,0,1],[1,0,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(0,1,0,3,2,3))},
+
+{id:72,name:'Bloco em O (planta)',
+ desc:'Vista superior em "O" — quadrado com buraco central.',
+ front:[[1,1,1],[1,1,1]],top:[[1,1,1],[1,0,1],[1,1,1]],left:[[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(1,1,0,2,2,2))},
+
+{id:73,name:'Dois Andares Desalinhados',
+ desc:'Andar inferior 4×2×1 + andar superior 3×2×1 deslocado à direita.',
+ front:[[0,1,1,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(1,0,1,4,2,2))},
+
+{id:74,name:'Bloco Tabuleiro',
+ desc:'Quatro blocos 2×2×1 em tabuleiro 4×4 alternando altura.',
+ front:[[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[1,1,1,1]],
+ edges:visEdgesBox(0,0,0,4,4,1)},
+
+{id:75,name:'Bloco Escadinha Lateral',
+ desc:'Rampa lateral: blocos 1×1×1 escalonados na profundidade.',
+ front:[[1,1,1]],top:[[1,0,0],[1,1,0],[1,1,1]],left:[[0,0,1],[0,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,1,1),visEdgesBox(0,1,0,3,2,1),visEdgesBox(0,2,0,3,3,1))},
+
+{id:76,name:'Sólido em Z Vertical',
+ desc:'Blocos em z: inferior frontal 2×1×1 + meio 2×1×1 + superior traseiro 2×1×1.',
+ front:[[1,1],[1,1],[1,1]],top:[[1,1]],left:[[1],[1],[1]],
+ edges:visEdgesBox(0,0,0,2,1,3)},
+
+{id:77,name:'Bloco Bipartido',
+ desc:'Dois blocos 2×2×2 justapostos na profundidade (total 2×4×2).',
+ front:[[1,1],[1,1]],top:[[1,1],[1,1],[1,1],[1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
+ edges:visEdgesBox(0,0,0,2,4,2)},
+
+{id:78,name:'Bloco com Orelhas',
+ desc:'Bloco central 2×1×2 com dois ressaltos laterais 1×1×1.',
+ front:[[1,1,1],[0,1,0]],top:[[1,1,1]],left:[[1],[1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,1,1),visEdgesBox(1,0,1,2,1,2))},
+
+{id:79,name:'Bloco com Pedestal',
+ desc:'Pedestal 3×3×1 + bloco 1×1×2 centralizado + bloco 1×1×1 no topo.',
+ front:[[0,1,0],[0,1,0],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[0,1,0],[0,1,0],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,4))},
+
+{id:80,name:'Sólido Composto Avançado',
+ desc:'Base 4×3×1 + bloco 2×2×2 canto frontal esq. + bloco 1×3×3 canto traseiro dir.',
+ front:[[0,0,1,0],[0,0,1,0],[1,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[0,0,1],[0,0,1],[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,2,2,3),visEdgesBox(3,0,1,4,3,4))},
+
+// ─── GRUPO 7: Desafios (81–100) ───────────────────────────────────
+{id:81,name:'Desafio: Parapeito',
+ desc:'Bloco 4×1×1 com dois pilares 1×1×2 nas extremidades.',
+ front:[[1,0,0,1],[1,1,1,1]],top:[[1,1,1,1]],left:[[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,4,1,1),visEdgesBox(0,0,1,1,1,3),visEdgesBox(3,0,1,4,1,3))},
+
+{id:82,name:'Desafio: Cruz 3D',
+ desc:'Cruz em planta (1×3 + 3×1) com altura 2.',
+ front:[[1,1,1],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(1,0,0,2,3,2),visEdgesBox(0,1,0,3,2,2))},
+
+{id:83,name:'Desafio: Pórtico',
+ desc:'Dois pilares 1×2×4 com viga 4×2×1 no topo (vão livre).',
+ front:[[1,1,1,1],[1,0,0,1],[1,0,0,1],[1,0,0,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0],[1,0],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,1,2,4),visEdgesBox(3,0,1,4,2,4))},
+
+{id:84,name:'Desafio: Anfiteatro',
+ desc:'Arquibancada com 3 degraus, largura 5 e profundidade 3.',
+ front:[[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1]],
+ top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
+ left:[[0,0,1],[0,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(1,0,1,4,3,2),visEdgesBox(2,0,2,3,3,3))},
+
+{id:85,name:'Desafio: Cogumelo',
+ desc:'Haste 1×1×2 com chapéu 3×3×1 no topo.',
+ front:[[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,1,0],[0,1,0],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,3))},
+
+{id:86,name:'Desafio: Chaminé',
+ desc:'Base 3×3×1 + corpo 2×2×3 + chapéu 3×3×1 no topo.',
+ front:[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,4),visEdgesBox(0,0,4,3,3,5))},
+
+{id:87,name:'Desafio: Bloco L×2',
+ desc:'Dois blocos em L empilhados em espelho.',
+ front:[[1,1,1],[1,0,0],[1,1,1],[1,0,0]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,0],[1,1],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,2),visEdgesBox(0,0,2,3,2,3),visEdgesBox(0,0,3,1,2,4))},
+
+{id:88,name:'Desafio: Catedral',
+ desc:'Base 5×3×1 + torre central 1×1×4 + dois pináculos 1×1×2.',
+ front:[[0,0,1,0,0],[0,0,1,0,0],[0,1,1,1,0],[0,1,1,1,0],[1,1,1,1,1]],
+ top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
+ left:[[0,0,0,1],[0,0,0,1],[0,0,1,1],[0,0,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(1,0,1,4,3,3),visEdgesBox(2,0,3,3,3,5))},
+
+{id:89,name:'Desafio: Escada em U',
+ desc:'Escada que sobe e desce — dois lances em oposição.',
+ front:[[1,1,1,1],[0,1,1,1],[0,0,1,1],[0,0,0,1]],
+ top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
+ left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,3,0,4,4,1),visEdgesBox(0,2,1,4,4,2),visEdgesBox(0,1,2,4,4,3),visEdgesBox(0,0,3,4,4,4))},
+
+{id:90,name:'Desafio: Ponte',
+ desc:'Dois pilares 1×2×3 com arco de viga 4×2×1 no topo — vão livre.',
+ front:[[1,1,1,1],[1,0,0,1],[1,0,0,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0],[1,0]],
+ edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(3,0,0,4,2,3),visEdgesBox(0,0,2,4,2,3))},
+
+{id:91,name:'Desafio: Castelo',
+ desc:'Base 5×3×1 + muralha 5×1×2 na frente + torre 1×3×3 no centro.',
+ front:[[0,0,1,0,0],[1,1,1,1,1],[1,1,1,1,1]],top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],left:[[0,0,1],[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(0,0,1,5,1,3),visEdgesBox(2,0,1,3,3,4))},
+
+{id:92,name:'Desafio: Bloco em N',
+ desc:'Vista frontal em "N" — dois pilares com diagonal interna.',
+ front:[[1,1,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(1,0,0,2,2,3))},
+
+{id:93,name:'Desafio: Edifício',
+ desc:'Base larga 4×3×1 + dois andares 4×2×1 + cobertura 4×1×1.',
+ front:[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]],
+ top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
+ left:[[1,1,1],[1,1,1],[1,1,1],[1,1,1]],
+ edges:visEdgesBox(0,0,0,4,3,4)},
+
+{id:94,name:'Desafio: Pedra de Xadrez',
+ desc:'Peça de xadrez estilizada: base 3×3×1 + pescoço 1×1×2 + cabeça 2×2×1.',
+ front:[[0,1,1],[0,1,0],[0,1,0],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,3),visEdgesBox(0,0,3,2,2,4))},
+
+{id:95,name:'Desafio: Escada Caracol',
+ desc:'Quatro degraus em espiral — cada degrau girado 1 unidade.',
+ front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
+ top:[[1,1,1,1],[0,1,1,1],[0,0,1,1],[0,0,0,1]],
+ left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,1,1),visEdgesBox(0,1,1,3,2,2),visEdgesBox(0,2,2,2,3,3),visEdgesBox(0,3,3,1,4,4))},
+
+{id:96,name:'Desafio: Bloco Xadrez 2×2',
+ desc:'Quatro blocos alternados de altura 1 e 2 formando tabuleiro.',
+ front:[[1,1],[0,1]],top:[[1,1],[1,1]],left:[[1,0],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(1,0,1,2,2,2))},
+
+{id:97,name:'Desafio: Bloco Diamante',
+ desc:'Forma octogonal aproximada com 4 recortes de canto.',
+ front:[[0,1,1,1,0],[1,1,1,1,1],[0,1,1,1,0]],top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],left:[[0,1,1],[1,1,1],[0,1,1]],
+ edges:combineVis(visEdgesBox(0,1,0,5,2,1),visEdgesBox(1,0,0,4,3,1),visEdgesBox(1,0,1,4,3,2),visEdgesBox(0,1,1,5,2,3))},
+
+{id:98,name:'Desafio: Arranha-Céu',
+ desc:'Edifício escalonado: base 5×3×2 + corpo 3×2×3 + topo 1×1×2.',
+ front:[[0,0,1,0,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[1,1,1,1,1],[1,1,1,1,1]],
+ top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
+ left:[[0,0,1],[0,1,1],[0,1,1],[0,1,1],[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,5,3,2),visEdgesBox(1,0,2,4,2,5),visEdgesBox(2,0,5,3,1,7))},
+
+{id:99,name:'Desafio: Sólido Complexo',
+ desc:'Base 4×4×1 + bloco 2×2×2 em (1,1) + pilar 1×1×4 em (0,0) + bloco 2×4×1 em z=3.',
+ front:[[0,0,1,1],[0,0,1,1],[1,0,1,1],[1,0,1,1],[1,1,1,1]],
+ top:[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]],
+ left:[[0,0,0,1],[0,0,0,1],[0,0,1,1],[1,1,1,1],[1,1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,4,1),visEdgesBox(1,1,1,3,3,3),visEdgesBox(0,0,1,1,1,5))},
+
+{id:100,name:'Desafio Final: Complexo',
+ desc:'Sólido máximo: base + escada lateral + torre + ressaltos — máximo desafio!',
+ front:[[0,0,1,0],[0,1,1,0],[1,1,1,1],[1,1,1,1]],
+ top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
+ left:[[0,0,1],[0,1,1],[1,1,1],[1,1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,4,3,2),visEdgesBox(2,0,2,3,3,4),visEdgesBox(2,0,3,3,3,4))},
+];
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+let curEx=0,curTool='line',curColor='#1C1917';
+let lines=[],tempLine=null,isDown=false,startPt=null;
+let score=0,attempts=0,corrCount=0,results=[];
+let solVis=false;
+let zoom=1,panX=0,panY=0;
+let isPan=false,panSt=null,panOr=null;
+// customEdges[i] stores user-saved canvas-coord edges for exercise i (overrides EX[i].edges)
+const customEdges={};
+// customViews[i] stores user-edited orthographic grids {front,left,top}
+const customViews={};
+
+const COS30=Math.cos(Math.PI/6),SIN30=Math.sin(Math.PI/6);
+const BASE_U=30;
+let cv,ctx;
+
+function U(){return BASE_U*zoom;}
+
+// ── Isometric projection ─────────────────────────────────────────
+// x=largura (eixo ESQUERDO 30°), y=profundidade (eixo DIREITO 30°), z=altura
+// (y-x) faz X ir para a esquerda e Y ir para a direita — face frontal à esquerda
+function iso(x,y,z){
+  const u=U();
+  return{x:panX+(y-x)*u*COS30, y:panY+(y+x)*u*SIN30-z*u};
+}
+
+// ── Snap to nearest iso grid point ───────────────────────────────
+function snap(px,py){
+  const u=U();
+  let best={d:Infinity,x:px,y:py};
+  const R=Math.ceil(300/u)+2;
+  for(let x=-R;x<=R;x++){
+    for(let y=-R;y<=R;y++){
+      for(let z=0;z<=10;z++){
+        const p=iso(x,y,z);
+        const d=Math.hypot(p.x-px,p.y-py);
+        if(d<best.d){best.d=d;best.x=p.x;best.y=p.y;}
+      }
+    }
+  }
+  const sr=Math.max(12,u*0.5);
+  return best.d<sr?{x:best.x,y:best.y,ok:true}:{x:px,y:py,ok:false};
+}
+
+// ── Snap canvas point to nearest iso grid INTEGER coordinates ─────
+// Returns {gx,gy,gz} — the integer grid coords of the nearest node
+function snapGrid(px,py){
+  const u=U();
+  let best={d:Infinity,gx:0,gy:0,gz:0};
+  const R=Math.ceil(300/u)+2;
+  for(let x=-R;x<=R;x++){
+    for(let y=-R;y<=R;y++){
+      for(let z=0;z<=10;z++){
+        const p=iso(x,y,z);
+        const d=Math.hypot(p.x-px,p.y-py);
+        if(d<best.d){best.d=d;best.gx=x;best.gy=y;best.gz=z;}
+      }
+    }
+  }
+  return{gx:best.gx,gy:best.gy,gz:best.gz};
+}
+
+function evXY(e){
+  const r=cv.getBoundingClientRect();
+  if(e.touches){const t=e.touches[0]||e.changedTouches[0];return{x:t.clientX-r.left,y:t.clientY-r.top};}
+  return{x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════
+function render(){
+  if(!ctx)return;
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#FEFCF8';ctx.fillRect(0,0,W,H);
+  drawGrid();
+  // NO AXES — only grid
+  if(solVis)drawSol();
+  lines.forEach(l=>ln(l.x1,l.y1,l.x2,l.y2,l.color,2.2));
+  if(tempLine)ln(tempLine.x1,tempLine.y1,tempLine.x2,tempLine.y2,curColor,2,[8,5]);
+}
+
+function drawGrid(){
+  const u=U(),W=cv.width,H=cv.height;
+  const steps=Math.ceil(Math.max(W,H)/u/2)+3;
+  ctx.lineWidth=1;ctx.setLineDash([]);
+
+  // Diagonal lines family 1 (row=const)
+  ctx.strokeStyle='#DDD8CF';
+  for(let i=-steps;i<=steps;i++){
+    const p0=iso(-steps,i,0),p1=iso(steps,i,0);
+    ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();
+  }
+  // Diagonal lines family 2 (col=const)
+  for(let i=-steps;i<=steps;i++){
+    const p0=iso(i,-steps,0),p1=iso(i,steps,0);
+    ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();
+  }
+  // Vertical lines at each node
+  ctx.strokeStyle='#E8E3DA';
+  for(let x=-steps;x<=steps;x++){
+    for(let y=-steps;y<=steps;y++){
+      const p0=iso(x,y,0),p1=iso(x,y,8);
+      ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();
+    }
+  }
+}
+
+function ln(x1,y1,x2,y2,color,w,dash){
+  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();
+}
+
+function getSolEdges(){
+  if(customEdges[curEx]){
+    // Custom edges stored as [[gx0,gy0,gz0],[gx1,gy1,gz1]] — project with current zoom/pan
+    return customEdges[curEx].map(e=>{
+      const a=iso(...e[0]),b=iso(...e[1]);
+      return{x1:a.x,y1:a.y,x2:b.x,y2:b.y};
+    });
+  }
+  // Default: project from iso coordinates
+  return EX[curEx].edges.map(e=>{
+    const a=iso(...e[0]),b=iso(...e[1]);
+    return{x1:a.x,y1:a.y,x2:b.x,y2:b.y};
+  });
+}
+function drawSol(){
+  getSolEdges().forEach(e=>ln(e.x1,e.y1,e.x2,e.y2,'#166534',2.5));
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CANVAS SIZE
+// ══════════════════════════════════════════════════════════════════
+function resizeCv(){
+  const wrap=document.getElementById('isoWrap');
+  if(!wrap||!cv)return;
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(W<1||H<1)return;
+  cv.width=W;cv.height=H;
+  if(panX===0&&panY===0){panX=W/2;panY=H*0.6;}
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// EVENTS
+// ══════════════════════════════════════════════════════════════════
+function onDown(e){
+  e.preventDefault();
+  const pos=evXY(e);
+  if(e.touches&&e.touches.length===2){
+    isPan=true;panSt={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2};panOr={x:panX,y:panY};return;
+  }
+  if(e.button===2||(e.ctrlKey&&!e.touches)){isPan=true;panSt={x:pos.x,y:pos.y};panOr={x:panX,y:panY};return;}
+  if(curTool==='erase'){eraseAt(pos.x,pos.y);return;}
+  const s=snap(pos.x,pos.y);
+  isDown=true;startPt=s;
+}
+function onMove(e){
+  e.preventDefault();
+  if(isPan){
+    let mx,my;
+    if(e.touches&&e.touches.length>=2){mx=(e.touches[0].clientX+e.touches[1].clientX)/2;my=(e.touches[0].clientY+e.touches[1].clientY)/2;}
+    else{const p=evXY(e);mx=p.x;my=p.y;}
+    panX=panOr.x+(mx-panSt.x);panY=panOr.y+(my-panSt.y);render();return;
+  }
+  if(!isDown||!startPt)return;
+  const pos=evXY(e),s=snap(pos.x,pos.y);
+  tempLine={x1:startPt.x,y1:startPt.y,x2:s.x,y2:s.y};render();
+}
+function onUp(e){
+  e.preventDefault();isPan=false;
+  if(!isDown||!startPt)return;
+  const pos=evXY(e),s=snap(pos.x,pos.y);
+  if(Math.hypot(s.x-startPt.x,s.y-startPt.y)>6)
+    lines.push({x1:startPt.x,y1:startPt.y,x2:s.x,y2:s.y,color:curColor});
+  isDown=false;tempLine=null;startPt=null;render();
+}
+function onWheel(e){
+  e.preventDefault();
+  adjZoom(e.deltaY<0?.15:-.15,evXY(e));
+}
+
+function eraseAt(px,py){
+  const T=14;
+  lines=lines.filter(l=>distPS(px,py,l.x1,l.y1,l.x2,l.y2)>T);render();
+}
+function distPS(px,py,x1,y1,x2,y2){
+  const dx=x2-x1,dy=y2-y1,lsq=dx*dx+dy*dy;
+  if(!lsq)return Math.hypot(px-x1,py-y1);
+  const t=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/lsq));
+  return Math.hypot(px-(x1+t*dx),py-(y1+t*dy));
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOOLS
+// ══════════════════════════════════════════════════════════════════
+function setTool(t){
+  curTool=t;
+  document.getElementById('btnLine').classList.toggle('active',t==='line');
+  document.getElementById('btnErase').classList.toggle('active',t==='erase');
+  cv.style.cursor=t==='erase'?'cell':'crosshair';
+}
+function setColor(c,i){
+  curColor=c;
+  document.querySelectorAll('.csw').forEach((s,j)=>s.classList.toggle('active',j===i));
+  if(curTool!=='line')setTool('line');
+}
+function undoLine(){lines.pop();render();}
+function clearDraw(){
+  lines=[];tempLine=null;solVis=false;
+  document.getElementById('solNote').style.display='none';
+  document.getElementById('btnEdit').style.display='none';
+  document.getElementById('btnSave').style.display='none';
+  document.getElementById('btnSol').style.display='inline-flex';
+  render();hideFB();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ZOOM
+// ══════════════════════════════════════════════════════════════════
+function adjZoom(delta,pivot){
+  const prev=zoom;
+  zoom=Math.max(.2,Math.min(5,zoom+delta));
+  if(pivot){const sc=zoom/prev;panX=pivot.x-(pivot.x-panX)*sc;panY=pivot.y-(pivot.y-panY)*sc;}
+  document.getElementById('zlbl').textContent=Math.round(zoom*100)+'%';
+  render();
+}
+function resetView(){
+  zoom=1;panX=cv.width/2;panY=cv.height*.6;lines=[];
+  document.getElementById('zlbl').textContent='100%';
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// EXERCISES
+// ══════════════════════════════════════════════════════════════════
+function buildSel(){
+  const sel=document.getElementById('exSel');
+  sel.innerHTML=EX.map((e,i)=>`<option value="${i}">${e.id}. ${e.name}</option>`).join('');
+}
+function selEx(idx){
+  curEx=parseInt(idx);document.getElementById('exSel').value=curEx;
+  clearDraw();loadEx();hideFB();
+}
+function nextEx(){selEx((curEx+1)%EX.length);}
+function loadEx(){
+  document.getElementById('exDesc').textContent=EX[curEx].desc;
+  // Use customViews if available for this exercise
+  const viewSrc=customViews[curEx]
+    ?{front:customViews[curEx].front,left:customViews[curEx].left,top:customViews[curEx].top}
+    :EX[curEx];
+  drawViews(viewSrc);
+  updCustomBadge();
+  // Show/hide views badge
+  const vb=document.getElementById('viewsBadge');
+  if(vb)vb.style.display=customViews[curEx]?'inline-flex':'none';
+  render();
+}
+
+// ── Draw orthographic views — NBR 17006 (1º Diedro) ──────────────
+// Layout:  VF  | VLE     VF colunas=x(largura), linhas=z(altura de cima)
+//          VS  |  —      VS colunas=x(largura),  linhas=y(prof de frente)
+//                        VLE colunas=y(prof),    linhas=z(altura de cima)
+// Alinhamento NBR:
+//   VF e VS → mesma largura (compartilham dimensão x)
+//   VF e VLE → mesma altura (compartilham dimensão z)
+function drawViews(ex){
+  const CELL=22, PAD=4;
+
+  function renderGrid(el, grid){
+    if(!el||!grid||!grid.length)return;
+    const rows=grid.length, cols=grid[0].length;
+    el.width = cols*CELL + PAD*2;
+    el.height = rows*CELL + PAD*2;
+    const c=el.getContext('2d');
+    c.clearRect(0,0,el.width,el.height);
+    c.fillStyle='#FEFCF8'; c.fillRect(0,0,el.width,el.height);
+
+    // Filled cells
+    for(let r=0;r<rows;r++){
+      for(let co=0;co<cols;co++){
+        if(grid[r][co]){
+          c.fillStyle='#1C1917';
+          c.fillRect(PAD+co*CELL+1, PAD+r*CELL+1, CELL-2, CELL-2);
+        }
+      }
+    }
+    // Grid lines
+    c.strokeStyle='#C8C2B8'; c.lineWidth=0.5;
+    for(let r=0;r<=rows;r++){
+      c.beginPath();c.moveTo(PAD,PAD+r*CELL);c.lineTo(PAD+cols*CELL,PAD+r*CELL);c.stroke();
+    }
+    for(let co=0;co<=cols;co++){
+      c.beginPath();c.moveTo(PAD+co*CELL,PAD);c.lineTo(PAD+co*CELL,PAD+rows*CELL);c.stroke();
+    }
+    // Outer border
+    c.strokeStyle='#1C1917'; c.lineWidth=1.5;
+    c.strokeRect(PAD, PAD, cols*CELL, rows*CELL);
+  }
+
+  const cvF=document.getElementById('cvF');
+  const cvT=document.getElementById('cvT');
+  const cvL=document.getElementById('cvL');
+  const vempty=document.querySelector('.vempty');
+
+  renderGrid(cvF, ex.front); // V.F.: cols=x, rows=z
+  renderGrid(cvT, ex.top);   // V.S.: cols=x, rows=y
+  renderGrid(cvL, ex.left);  // V.L.E.: cols=y, rows=z
+
+  // Enforce NBR alignment:
+  // VF and VS share x-dimension → must have same canvas width
+  if(cvF&&cvT){
+    const w = Math.max(cvF.width, cvT.width);
+    cvF.style.width = w+'px';
+    cvT.style.width = w+'px';
+  }
+  // VF and VLE share z-dimension → must have same canvas height
+  if(cvF&&cvL){
+    const h = Math.max(cvF.height, cvL.height);
+    cvF.style.height = h+'px';
+    cvL.style.height = h+'px';
+  }
+  // Empty cell matches VLE size
+  if(vempty&&cvL){
+    vempty.style.width = cvL.offsetWidth + 'px';
+    vempty.style.height = cvT.offsetHeight + 'px';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHECK
+// ══════════════════════════════════════════════════════════════════
+function checkAns(){
+  attempts++;document.getElementById('stA').textContent=attempts;
+  if(lines.length<2){showFB('wn','⚠️','Desenhe as arestas visíveis do objeto antes de verificar.');return;}
+  const sol=getSolEdges();
+  let match=0;
+  const tol=U()*0.85;
+  sol.forEach(s=>{
+    const ok=lines.some(l=>{
+      const d1=Math.hypot(l.x1-s.x1,l.y1-s.y1)+Math.hypot(l.x2-s.x2,l.y2-s.y2);
+      const d2=Math.hypot(l.x1-s.x2,l.y1-s.y2)+Math.hypot(l.x2-s.x1,l.y2-s.y1);
+      return Math.min(d1,d2)<tol*2;
+    });
+    if(ok)match++;
+  });
+  const pct=sol.length?match/sol.length:0;
+  if(pct>=.8){score+=10;corrCount++;showFB('ok','🎉',`Excelente! ${Math.round(pct*100)}% correto. +10 pts`);updateSc();recRes(true,pct);}
+  else if(pct>=.5){showFB('wn','🔍',`Quase! ${Math.round(pct*100)}% das arestas. Revise as 3 vistas.`);recRes(false,pct);}
+  else{showFB('er','💡',`${Math.round(pct*100)}% correto. Use 👁 Gabarito para ver a solução.`);recRes(false,pct);}
+}
+function showSol(){
+  solVis=true;
+  document.getElementById('solNote').style.display='block';
+  document.getElementById('btnEdit').style.display='inline-flex';
+  document.getElementById('btnSol').style.display='none';
+  showFB('wn','👁','Gabarito em verde. Clique <b>✏️ Editar</b> para corrigir as arestas.');
+  render();
+}
+function editSol(){
+  // Materialise solution edges as editable green lines
+  getSolEdges().forEach(e=>{
+    const dup=lines.some(l=>
+      (Math.hypot(l.x1-e.x1,l.y1-e.y1)+Math.hypot(l.x2-e.x2,l.y2-e.y2))<2 ||
+      (Math.hypot(l.x1-e.x2,l.y1-e.y2)+Math.hypot(l.x2-e.x1,l.y2-e.y1))<2
+    );
+    if(!dup) lines.push({x1:e.x1,y1:e.y1,x2:e.x2,y2:e.y2,color:'#166534'});
+  });
+  solVis=false;
+  document.getElementById('solNote').style.display='none';
+  document.getElementById('btnEdit').style.display='none';
+  document.getElementById('btnSol').style.display='inline-flex';
+  document.getElementById('btnSave').style.display='inline-flex';
+  setColor('#166534',3);
+  showFB('ok','✏️','Gabarito editável. Apague arestas incorretas ou acrescente as que faltam. Clique <b>💾 Salvar</b> quando terminar.');
+  render();
+}
+
+function saveSol(){
+  if(lines.length===0){
+    showFB('wn','⚠️','Nenhuma aresta para salvar. Desenhe o gabarito correto primeiro.');
+    return;
+  }
+  // Convert each line's canvas endpoints back to nearest iso grid integer coords
+  const gridEdges=lines.map(l=>{
+    const a=snapGrid(l.x1,l.y1);
+    const b=snapGrid(l.x2,l.y2);
+    return[[a.gx,a.gy,a.gz],[b.gx,b.gy,b.gz]];
+  });
+  // Deduplicate (same pair regardless of direction)
+  const seen=new Set();
+  customEdges[curEx]=gridEdges.filter(e=>{
+    const k=e[0].join(',')+'>'+e[1].join(',');
+    const kr=e[1].join(',')+'>'+e[0].join(',');
+    if(seen.has(k)||seen.has(kr))return false;
+    seen.add(k);return true;
+  });
+  document.getElementById('btnSave').style.display='none';
+  document.getElementById('btnReset').style.display='inline-flex';
+  updCustomBadge();
+  showFB('ok','💾',`Gabarito de <b>${EX[curEx].name}</b> salvo! Será usado nas próximas verificações. Clique <b>↺ Original</b> para restaurar.`);
+}
+
+function resetSol(){
+  delete customEdges[curEx];
+  document.getElementById('btnReset').style.display='none';
+  updCustomBadge();
+  showFB('wn','↺','Gabarito original restaurado.');
+  // Redraw solution overlay with original edges
+  clearDraw();
+}
+
+function updCustomBadge(){
+  const badge=document.getElementById('customBadge');
+  if(!badge)return;
+  const has=!!customEdges[curEx];
+  badge.style.display=has?'inline-flex':'none';
+  // Also show/hide reset button
+  document.getElementById('btnReset').style.display=has?'inline-flex':'none';
+}
+
+function showFB(t,i,txt){const b=document.getElementById('fbBox');b.className='fb show '+t;document.getElementById('fbIco').textContent=i;document.getElementById('fbTxt').innerHTML=txt;}
+function hideFB(){document.getElementById('fbBox').className='fb';}
+function updateSc(){
+  document.getElementById('scoreChip').textContent=`⭐ ${score} pts`;
+  document.getElementById('stS').textContent=score;
+  document.getElementById('stC').textContent=corrCount;
+}
+// ══════════════════════════════════════════════════════════════════
+// VIEW EDITOR MODAL
+// ══════════════════════════════════════════════════════════════════
+
+// Working copies of the three grids while modal is open
+let ve={F:null,L:null,T:null};  // 2D arrays of 0/1
+let veMode='edit'; // 'edit' | 'new'
+let veDragging=null; // value being painted (0 or 1) during drag
+
+// Deep copy a 2D grid
+function gridClone(g){return g.map(r=>[...r]);}
+
+// Ensure all rows have same length (pad with 0)
+function gridNorm(g){
+  if(!g||!g.length)return[[0]];
+  const cols=Math.max(...g.map(r=>r.length));
+  return g.map(r=>{const nr=[...r];while(nr.length<cols)nr.push(0);return nr;});
+}
+
+function openViewEditor(){
+  const ex=EX[curEx];
+  // Use customViews if available, else default
+  const cv2=customViews[curEx];
+  ve.F=gridClone(gridNorm(cv2?cv2.front:ex.front));
+  ve.L=gridClone(gridNorm(cv2?cv2.left:ex.left));
+  ve.T=gridClone(gridNorm(cv2?cv2.top:ex.top));
+  veMode='edit';
+  switchMTab('edit');
+  veRenderAll();
+  document.getElementById('veModal').classList.add('open');
+  document.getElementById('veModalTitle').textContent=`✎ Editar Vistas — ${ex.name}`;
+  // Show reset button only if there are custom views
+  document.getElementById('veBtnReset').style.display=customViews[curEx]?'inline-flex':'none';
+}
+
+function closeViewEditor(){
+  document.getElementById('veModal').classList.remove('open');
+}
+
+function switchMTab(tab){
+  veMode=tab;
+  document.getElementById('mtabEdit').classList.toggle('active',tab==='edit');
+  document.getElementById('mtabNew').classList.toggle('active',tab==='new');
+  document.getElementById('mtabEditPane').style.display=tab==='edit'?'block':'none';
+  document.getElementById('mtabNewPane').style.display=tab==='new'?'block':'none';
+  document.getElementById('veBtnSave').style.display=tab==='edit'?'inline-flex':'none';
+  document.getElementById('veBtnCreate').style.display=tab==='new'?'inline-flex':'none';
+  document.getElementById('veBtnReset').style.display=(tab==='edit'&&customViews[curEx])?'inline-flex':'none';
+}
+
+// ── Render a grid editor ───────────────────────────────────────────
+function veRenderGrid(key){
+  const grid=ve[key];
+  const container=document.getElementById('veg'+key);
+  if(!container||!grid)return;
+  const rows=grid.length, cols=grid[0].length;
+  container.style.gridTemplateColumns=`repeat(${cols},28px)`;
+  container.style.gridTemplateRows=`repeat(${rows},28px)`;
+  container.innerHTML='';
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const cell=document.createElement('div');
+      cell.className='vedcell'+(grid[r][c]?' on':'');
+      cell.dataset.r=r; cell.dataset.c=c; cell.dataset.k=key;
+      // Mouse events
+      cell.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        veDragging=grid[r][c]?0:1;
+        grid[r][c]=veDragging;
+        cell.className='vedcell'+(grid[r][c]?' on':'');
+      });
+      cell.addEventListener('mouseenter',()=>{
+        if(veDragging===null)return;
+        grid[r][c]=veDragging;
+        cell.className='vedcell'+(grid[r][c]?' on':'');
+      });
+      // Touch events
+      cell.addEventListener('touchstart',e=>{
+        e.preventDefault();
+        veDragging=grid[r][c]?0:1;
+        grid[r][c]=veDragging;
+        cell.className='vedcell'+(grid[r][c]?' on':'');
+      },{passive:false});
+      cell.addEventListener('touchmove',e=>{
+        e.preventDefault();
+        const t=e.touches[0];
+        const el=document.elementFromPoint(t.clientX,t.clientY);
+        if(el&&el.classList.contains('vedcell')&&el.dataset.k===key){
+          const tr=parseInt(el.dataset.r),tc=parseInt(el.dataset.c);
+          if(grid[tr][tc]!==veDragging){
+            grid[tr][tc]=veDragging;
+            el.className='vedcell'+(veDragging?' on':'');
+          }
+        }
+      },{passive:false});
+      container.appendChild(cell);
+    }
+  }
+}
+
+function veRenderAll(){
+  veRenderGrid('F');veRenderGrid('L');veRenderGrid('T');
+}
+
+// Stop drag on mouseup anywhere
+document.addEventListener('mouseup',()=>{veDragging=null;});
+document.addEventListener('touchend',()=>{veDragging=null;});
+
+// ── Resize helpers ─────────────────────────────────────────────────
+function veResize(key,op){
+  const g=ve[key];
+  if(!g)return;
+  const rows=g.length, cols=g[0].length;
+  if(op==='addCol'){g.forEach(r=>r.push(0));}
+  else if(op==='delCol'){if(cols>1)g.forEach(r=>r.pop());}
+  else if(op==='addRow'){g.push(new Array(cols).fill(0));}
+  else if(op==='delRow'){if(rows>1)g.pop();}
+
+  // NBR alignment: VF and VS share cols (X), VF and VLE share rows (Z)
+  if(key==='F'){
+    // Sync VS cols to VF cols
+    const nc=g[0].length;
+    ve.T.forEach(r=>{while(r.length<nc)r.push(0);while(r.length>nc)r.pop();});
+    // Sync VLE rows to VF rows
+    const nr=g.length;
+    while(ve.L.length<nr)ve.L.push(new Array(ve.L[0].length).fill(0));
+    while(ve.L.length>nr)ve.L.pop();
+  } else if(key==='T'){
+    // Sync VF cols to VS cols
+    const nc=g[0].length;
+    ve.F.forEach(r=>{while(r.length<nc)r.push(0);while(r.length>nc)r.pop();});
+    // Re-sync VLE rows to VF rows (which may have changed)
+    const nr=ve.F.length;
+    while(ve.L.length<nr)ve.L.push(new Array(ve.L[0].length).fill(0));
+    while(ve.L.length>nr)ve.L.pop();
+  } else if(key==='L'){
+    // VLE cols (Y) → sync VS rows (Y)
+    const nc=g[0].length;
+    const nr=ve.T.length;
+    ve.T.forEach(r=>{while(r.length<nc)r.push(0);while(r.length>nc)r.pop();});
+    // VLE rows (Z) → sync VF rows (Z)
+    const nrL=g.length;
+    while(ve.F.length<nrL)ve.F.push(new Array(ve.F[0].length).fill(0));
+    while(ve.F.length>nrL)ve.F.pop();
+    ve.T.forEach((r,ri)=>{/* VS rows=Y, unaffected by Z change */});
+  }
+  veRenderAll();
+}
+
+// ── Reset grids to exercise original ──────────────────────────────
+function veResetGrids(){
+  const ex=EX[curEx];
+  ve.F=gridClone(gridNorm(ex.front));
+  ve.L=gridClone(gridNorm(ex.left));
+  ve.T=gridClone(gridNorm(ex.top));
+  delete customViews[curEx];
+  document.getElementById('veBtnReset').style.display='none';
+  veRenderAll();
+  document.getElementById('veEditNote').textContent='Vistas restauradas ao original.';
+  document.getElementById('veEditNote').style.color='var(--gn)';
+}
+
+// ── Save edited views ──────────────────────────────────────────────
+function veSaveEdit(){
+  customViews[curEx]={front:gridClone(ve.F),left:gridClone(ve.L),top:gridClone(ve.T)};
+  drawViews({front:ve.F,left:ve.L,top:ve.T});
+  document.getElementById('veBtnReset').style.display='inline-flex';
+  document.getElementById('veEditNote').innerHTML='✅ Vistas salvas para <b>'+EX[curEx].name+'</b>.';
+  document.getElementById('veEditNote').style.color='var(--gn)';
+  // Show custom view badge
+  let vbadge=document.getElementById('viewsBadge');
+  if(!vbadge){
+    vbadge=document.createElement('div');
+    vbadge.id='viewsBadge';
+    vbadge.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#1e40af;background:#dbeafe;border:1px solid #93c5fd;border-radius:20px;padding:3px 9px;margin-bottom:8px;width:fit-content;';
+    vbadge.textContent='⊞ Vistas personalizadas';
+    document.getElementById('customBadge').after(vbadge);
+  }
+  vbadge.style.display='inline-flex';
+  setTimeout(closeViewEditor,900);
+}
+
+// ── Create new exercise ────────────────────────────────────────────
+function veCreateEx(){
+  const name=document.getElementById('newExName').value.trim();
+  const desc=document.getElementById('newExDesc').value.trim();
+  const X=Math.max(1,Math.min(10,parseInt(document.getElementById('newExX').value)||3));
+  const Y=Math.max(1,Math.min(10,parseInt(document.getElementById('newExY').value)||3));
+  const Z=Math.max(1,Math.min(10,parseInt(document.getElementById('newExZ').value)||3));
+  const errEl=document.getElementById('newExError');
+
+  if(!name){errEl.textContent='Digite um nome para o exercício.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+
+  // Build empty grids
+  const front=Array.from({length:Z},()=>new Array(X).fill(0));
+  const top  =Array.from({length:Y},()=>new Array(X).fill(0));
+  const left =Array.from({length:Z},()=>new Array(Y).fill(0));
+
+  const newId=EX.length+1;
+  const newEx={
+    id:newId,
+    name:'★ '+name,
+    desc:desc||'Exercício personalizado.',
+    front,top,left,
+    edges:[],  // no default gabarito — user will define via edit
+    custom:true
+  };
+  EX.push(newEx);
+  // Rebuild selector and jump to new exercise
+  buildSel();
+  selEx(EX.length-1);
+  closeViewEditor();
+  // Immediately open editor for the new exercise's views
+  setTimeout(()=>{
+    openViewEditor();
+    switchMTab('edit');
+    document.getElementById('veModalTitle').textContent=`✎ Editar Vistas — ${newEx.name}`;
+    document.getElementById('veEditNote').innerHTML='<b>Novo exercício criado!</b> Desenhe as vistas ortográficas abaixo e clique 💾 Salvar.';
+    document.getElementById('veEditNote').style.color='var(--ac)';
+  },100);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════════════════════════
+function recRes(ok,pct){results.push({name:EX[curEx].name,ok,pct});updProg();}
+
+function updProg(){
+  const l=document.getElementById('pgList');
+  l.innerHTML=results.map((r,i)=>`
+    <div class="pgit">
+      <span>${i+1}. ${r.name}</span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:var(--ink2);">${Math.round(r.pct*100)}%</span>
+        <span class="${r.ok?'bok':'ber'}">${r.ok?'✓ OK':'✗'}</span>
+      </span>
+    </div>`).join('');
+  const avg=results.reduce((s,r)=>s+r.pct,0)/results.length;
+  let tip='';
+  if(avg<.5)tip='📌 Identifique X (largura→V.F.), Y (prof→V.L.E.), Z (altura→ambas) antes de desenhar.';
+  else if(avg<.8)tip='📌 Boa evolução! Lembre: linhas paralelas ao mesmo eixo isométrico são paralelas entre si.';
+  else tip='🌟 Excelente! Tente os exercícios 81–100 para máximo desafio.';
+  document.getElementById('pgTips').innerHTML=`<p style="font-size:12px;color:var(--ink2);">${tip}</p>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════════════════
+function showTab(id){
+  ['tp','tl','tpg'].forEach(t=>document.getElementById(t).classList.toggle('active',t===id));
+  document.querySelectorAll('.tbtn').forEach((b,i)=>b.classList.toggle('active',['tp','tl','tpg'][i]===id));
+  if(id==='tl')drawLearnExs();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LEARN EXAMPLES
+// ══════════════════════════════════════════════════════════════════
+function drawLearnExs(){
+  drawAxesEx();drawBoxEx();drawStepEx();
+}
+function isoH(el,ox,oy,u){
+  const c=el.getContext('2d');
+  // Same projection as main canvas: (y-x)*cos30, X→left, Y→right
+  function p(x,y,z){return{x:ox+(y-x)*u*COS30,y:oy+(y+x)*u*SIN30-z*u};}
+  function l(x0,y0,z0,x1,y1,z1,col){
+    const a=p(x0,y0,z0),b=p(x1,y1,z1);
+    c.beginPath();c.strokeStyle=col||'#1C1917';c.lineWidth=2;c.lineCap='round';c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();
+  }
+  return{p,l,c};
+}
+function drawAxesEx(){
+  const el=document.getElementById('exAxes');if(!el)return;
+  const{l,p,c}=isoH(el,110,80,20);
+  c.fillStyle='#FEFCF8';c.fillRect(0,0,220,110);
+  // X (largura) → esquerda, Y (prof) → direita, Z (altura) → cima
+  l(0,0,0,3,0,0,'#C2410C');l(0,0,0,0,3,0,'#1E40AF');l(0,0,0,0,0,3,'#166534');
+  c.fillStyle='#C2410C';c.font='bold 10px Space Mono,monospace';
+  c.fillText('X (larg.)',p(3,0,0).x-52,p(3,0,0).y+4);  // X goes LEFT
+  c.fillStyle='#1E40AF';
+  c.fillText('Y (prof.)',p(0,3,0).x+4,p(0,3,0).y+4);   // Y goes RIGHT
+  c.fillStyle='#166534';
+  c.fillText('Z (alt.)',p(0,0,3).x+4,p(0,0,3).y-3);
+  c.fillStyle='#1C1917';c.beginPath();c.arc(p(0,0,0).x,p(0,0,0).y,3,0,Math.PI*2);c.fill();
+  c.font='9px DM Sans,sans-serif';c.fillStyle='#A8A29E';
+  c.fillText('30°',p(0,0,0).x-28,p(0,0,0).y+2);  // left axis label
+  c.fillText('30°',p(0,0,0).x+18,p(0,0,0).y+2);  // right axis label
+}
+function drawBoxEx(){
+  const el=document.getElementById('ex1');if(!el)return;
+  const{l,c}=isoH(el,90,95,18);
+  c.fillStyle='#FEFCF8';c.fillRect(0,0,150,110);
+  // Box 2×2×2 — visible edges: front(y=0), right-lateral(x=2), top(z=2)
+  // Front face (y=0): varies in X and Z
+  l(0,0,0,2,0,0);l(0,0,2,2,0,2);l(0,0,0,0,0,2);l(2,0,0,2,0,2);
+  // Right-lateral face (x=2): varies in Y and Z
+  l(2,0,0,2,2,0);l(2,0,2,2,2,2);l(2,2,0,2,2,2);
+  // Top face (z=2): varies in X and Y
+  l(0,0,2,0,2,2);l(0,2,2,2,2,2);l(2,2,2,2,0,2);
+  // Bottom-back edge (visible corner)
+  l(2,2,0,0,2,0);
+}
+function drawStepEx(){
+  const el=document.getElementById('ex2');if(!el)return;
+  const{l,c}=isoH(el,80,100,15);
+  c.fillStyle='#FEFCF8';c.fillRect(0,0,150,110);
+  // Degrau duplo: nível 1 (0,0,0→3,3,1), nível 2 (0,0,1→2,3,2), nível 3 (0,0,2→1,3,3)
+  // Apenas arestas visíveis: face frontal (y=0), face lat dir (x=max), topo (z=max)
+  // Nível 1 — face frontal y=0
+  l(0,0,0,3,0,0);l(0,0,0,0,0,1);l(3,0,0,3,0,1);
+  // Nível 2 — degrau em y=0
+  l(0,0,1,2,0,1);l(0,0,1,0,0,2);l(2,0,1,2,0,2);
+  // Nível 3 — degrau em y=0
+  l(0,0,2,1,0,2);l(0,0,2,0,0,3);l(1,0,2,1,0,3);l(0,0,3,1,0,3);
+  // Face lat dir x=max de cada nível
+  l(3,0,0,3,3,0);l(3,3,0,3,3,1);l(3,0,1,3,3,1);
+  l(2,0,1,2,3,1);l(2,3,1,2,3,2);l(2,0,2,2,3,2);
+  l(1,0,2,1,3,2);l(1,3,2,1,3,3);l(1,0,3,1,3,3);
+  // Topos
+  l(0,0,1,0,3,1);l(0,3,1,3,3,1);l(3,3,1,3,0,1);
+  l(0,0,2,0,3,2);l(0,3,2,2,3,2);l(2,3,2,2,0,2);
+  l(0,0,3,0,3,3);l(0,3,3,1,3,3);l(1,3,3,1,0,3);
+  // Arestas traseiras de fundo
+  l(3,3,0,0,3,0);l(2,3,1,0,3,1);l(1,3,2,0,3,2);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  cv=document.getElementById('isoCanvas');
+  ctx=cv.getContext('2d');
+  cv.addEventListener('mousedown',onDown);cv.addEventListener('mousemove',onMove);cv.addEventListener('mouseup',onUp);
+  cv.addEventListener('mouseleave',()=>{if(isDown&&tempLine){isDown=false;tempLine=null;startPt=null;render();}isPan=false;});
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+  cv.addEventListener('wheel',onWheel,{passive:false});
+  cv.addEventListener('touchstart',onDown,{passive:false});cv.addEventListener('touchmove',onMove,{passive:false});cv.addEventListener('touchend',onUp,{passive:false});
+  buildSel();selEx(0);
+  resizeCv();
+  new ResizeObserver(resizeCv).observe(document.getElementById('isoWrap'));
+});
+</script>
+</body>
+</html>
