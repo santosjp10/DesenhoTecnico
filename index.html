@@ -222,25 +222,70 @@ header{
 }
 
 /* ═══════════════════════════════════════════
-   PRACTICE TAB
+   PRACTICE TAB — canvas top, views bottom
 ═══════════════════════════════════════════ */
 #tp.active{display:flex;}
-.playout{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-@media(min-width:820px){.playout{flex-direction:row;}}
 
-/* Left sidebar */
+/* Main vertical stack */
+.playout{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* ── CANVAS ZONE (top, grows to fill) ── */
+.rpanel{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--bg);
+  min-height:0;
+}
+
+/* ── BOTTOM INFO STRIP ── */
 .lpanel{
   background:var(--surface);
-  border-bottom:1px solid var(--bd);
+  border-top:1px solid var(--bd);
   flex-shrink:0;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
+  overflow:hidden;
+  box-shadow:0 -3px 12px rgba(0,0,0,.06);
 }
-@media(min-width:820px){
-  .lpanel{width:300px;border-bottom:none;border-right:1px solid var(--bd);}
+
+/* Strip inner layout: exercise picker | views | feedback */
+.lin{
+  display:flex;
+  flex-direction:row;
+  align-items:flex-start;
+  gap:0;
+  height:100%;
+  overflow:hidden;
 }
-@media(max-width:819px){.lpanel{max-height:42vh;}}
-.lin{padding:12px 14px;}
+
+/* Three sections inside the bottom strip */
+.strip-sec{
+  flex-shrink:0;
+  padding:8px 10px;
+  border-right:1px solid var(--bd);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  overflow:hidden;
+}
+.strip-sec:last-child{border-right:none;flex:1;}
+
+/* Collapse mobile sections on very small screens */
+@media(max-width:600px){
+  .lin{flex-wrap:wrap;overflow-y:auto;max-height:44vw;}
+  .strip-sec{padding:6px 8px;}
+}
+@media(min-width:601px){
+  .lpanel{max-height:160px;}
+  .lin{overflow:hidden;}
+}
+
+.lin-pad{padding:10px 14px;}  /* legacy fallback */
 
 /* Section labels */
 .slbl{
@@ -782,40 +827,7 @@ header{
 <div id="tp" class="tab-pane active">
 <div class="playout">
 
-  <div class="lpanel">
-  <div class="lin">
-    <div class="slbl">Exercício</div>
-    <div class="exrow">
-      <select class="exsel" id="exSel" onchange="selEx(this.value)"></select>
-      <button class="btn ac" onclick="nextEx()" title="Próximo">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-    </div>
-    <div class="exdesc" id="exDesc">—</div>
-
-    <div id="customBadge" class="badge amber">✎ Gabarito personalizado</div>
-    <div id="viewsBadge" class="badge blue">⊞ Vistas personalizadas</div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-      <div class="slbl" style="margin:0;">Vistas — NBR 17006</div>
-      <button class="btn" style="font-size:10px;padding:3px 9px;" onclick="openViewEditor()">✎ Editar</button>
-    </div>
-
-    <div class="vgrid">
-      <div class="vcell"><div class="vlbl">V.F. — Frontal</div><canvas id="cvF"></canvas></div>
-      <div class="vcell"><div class="vlbl">V.L.E. — Lat. Esq.</div><canvas id="cvL"></canvas></div>
-      <div class="vcell"><div class="vlbl">V.S. — Superior</div><canvas id="cvT"></canvas></div>
-      <div class="vempty">—</div>
-    </div>
-    <p class="vnote">V.S. abaixo da V.F. · V.L.E. à direita da V.F.</p>
-
-    <div class="fb" id="fbBox">
-      <span class="fbico" id="fbIco">✅</span>
-      <span id="fbTxt"></span>
-    </div>
-  </div>
-  </div>
-
+  <!-- ── TOP: Toolbar + Canvas isométrico ── -->
   <div class="rpanel">
     <div class="dtbar">
       <button class="btn active" id="btnLine" onclick="setTool('line')" title="Linha">
@@ -844,10 +856,60 @@ header{
       <button class="btn" id="btnSol" onclick="showSol()">👁 Gabarito</button>
       <button class="btn" id="btnEdit" style="display:none" onclick="editSol()">✏️ Editar</button>
       <button class="btn gn" id="btnSave" style="display:none" onclick="saveSol()">💾 Salvar</button>
-      <button class="btn" id="btnReset" style="display:none;border-color:#d97706;color:#d97706;" onclick="resetSol()">↺ Original</button>
     </div>
     <div class="iwrap" id="isoWrap"><canvas id="isoCanvas"></canvas></div>
     <div class="solnote" id="solNote">👁 Gabarito em verde · clique <b>✏️ Editar</b> para modificar ou 🗑 para recomeçar</div>
+  </div>
+
+  <!-- ── BOTTOM STRIP: Exercício | Vistas | Feedback ── -->
+  <div class="lpanel">
+  <div class="lin">
+
+    <!-- Seção 1: Exercício -->
+    <div class="strip-sec" style="min-width:160px;max-width:220px;">
+      <div class="slbl" style="margin:0 0 2px;">Exercício</div>
+      <div class="exrow" style="margin:0;">
+        <select class="exsel" id="exSel" onchange="selEx(this.value)"></select>
+        <button class="btn ac" onclick="nextEx()" title="Próximo" style="padding:6px 9px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="exdesc" id="exDesc" style="margin:0;font-size:11px;padding:5px 8px;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">—</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <div id="customBadge" class="badge amber" style="margin:0;">✎ Gabarito editado</div>
+        <div id="viewsBadge" class="badge blue" style="margin:0;">⊞ Vistas editadas</div>
+      </div>
+    </div>
+
+    <!-- Seção 2: Vistas Ortográficas -->
+    <div class="strip-sec" style="flex:1;min-width:0;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div class="slbl" style="margin:0;">Vistas — NBR 17006</div>
+        <button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="openViewEditor()">✎ Editar</button>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;overflow-x:auto;padding-bottom:2px;">
+        <div class="vgrid" style="margin:0;flex-shrink:0;">
+          <div class="vcell"><div class="vlbl">V.F. — Frontal</div><canvas id="cvF"></canvas></div>
+          <div class="vcell"><div class="vlbl">V.L.E. — Lat. Esq.</div><canvas id="cvL"></canvas></div>
+          <div class="vcell"><div class="vlbl">V.S. — Superior</div><canvas id="cvT"></canvas></div>
+          <div class="vempty" style="font-size:9px;">—</div>
+        </div>
+        <p class="vnote" style="margin:0;align-self:flex-end;font-size:9px;writing-mode:horizontal-tb;">V.S. abaixo V.F.<br>V.L.E. à direita</p>
+      </div>
+    </div>
+
+    <!-- Seção 3: Feedback -->
+    <div class="strip-sec" style="min-width:140px;max-width:220px;justify-content:center;">
+      <div class="fb" id="fbBox" style="margin:0;flex:1;align-items:center;">
+        <span class="fbico" id="fbIco">✅</span>
+        <span id="fbTxt"></span>
+      </div>
+      <div id="fb-empty" style="font-size:11px;color:var(--ink3);text-align:center;line-height:1.5;">
+        Desenhe a perspectiva isométrica e clique <strong>✓ Verificar</strong>
+      </div>
+    </div>
+
+  </div>
   </div>
 
 </div>
@@ -2015,15 +2077,11 @@ function selEx(idx){
 function nextEx(){selEx((curEx+1)%EX.length);}
 function loadEx(){
   document.getElementById('exDesc').textContent=EX[curEx].desc;
-  // Use customViews if available for this exercise
-  const viewSrc=customViews[curEx]
-    ?{front:customViews[curEx].front,left:customViews[curEx].left,top:customViews[curEx].top}
-    :EX[curEx];
-  drawViews(viewSrc);
+  drawViews(EX[curEx]);
   updCustomBadge();
-  // Show/hide views badge
+  // Views badge not shown anymore (saves are permanent)
   const vb=document.getElementById('viewsBadge');
-  if(vb)vb.classList.toggle('show',!!customViews[curEx]);
+  if(vb)vb.classList.remove('show');
   render();
 }
 
@@ -2159,24 +2217,32 @@ function saveSol(){
   });
   // Deduplicate (same pair regardless of direction)
   const seen=new Set();
-  customEdges[curEx]=gridEdges.filter(e=>{
+  const deduped=gridEdges.filter(e=>{
     const k=e[0].join(',')+'>'+e[1].join(',');
     const kr=e[1].join(',')+'>'+e[0].join(',');
     if(seen.has(k)||seen.has(kr))return false;
     seen.add(k);return true;
   });
+  // ── Tornar o gabarito editado o novo original permanente ──────────
+  // Substitui EX[curEx].edges diretamente → não há mais "original anterior"
+  EX[curEx].edges=deduped;
+  // Limpa qualquer customEdges anterior (não é mais necessário)
+  delete customEdges[curEx];
   document.getElementById('btnSave').style.display='none';
-  document.getElementById('btnReset').style.display='inline-flex';
   updCustomBadge();
-  showFB('ok','💾',`Gabarito de <b>${EX[curEx].name}</b> salvo! Será usado nas próximas verificações. Clique <b>↺ Original</b> para restaurar.`);
+  showFB('ok','💾',`Gabarito de <b>${EX[curEx].name}</b> salvo como nova referência. Será usado em todas as verificações.`);
+  solVis=false;
+  document.getElementById('btnSol').style.display='inline-flex';
+  document.getElementById('btnEdit').style.display='none';
+  document.getElementById('solNote').style.display='none';
 }
 
 function resetSol(){
+  // Não há mais "original" separado — o gabarito salvo É o original agora
+  // Esta função é mantida apenas por compatibilidade interna
   delete customEdges[curEx];
-  document.getElementById('btnReset').style.display='none';
   updCustomBadge();
-  showFB('wn','↺','Gabarito original restaurado.');
-  // Redraw solution overlay with original edges
+  showFB('wn','↺','Customizações de gabarito removidas.');
   clearDraw();
 }
 
@@ -2185,12 +2251,19 @@ function updCustomBadge(){
   if(!badge)return;
   const has=!!customEdges[curEx];
   badge.classList.toggle('show',has);
-  // Also show/hide reset button
-  document.getElementById('btnReset').style.display=has?'inline-flex':'none';
+  // btnReset foi removido do layout — não há mais "original" depois de salvar
 }
 
-function showFB(t,i,txt){const b=document.getElementById('fbBox');b.className='fb show '+t;document.getElementById('fbIco').textContent=i;document.getElementById('fbTxt').innerHTML=txt;}
-function hideFB(){document.getElementById('fbBox').className='fb';}
+function showFB(t,i,txt){
+  const b=document.getElementById('fbBox');b.className='fb show '+t;
+  document.getElementById('fbIco').textContent=i;
+  document.getElementById('fbTxt').innerHTML=txt;
+  const fe=document.getElementById('fb-empty');if(fe)fe.style.display='none';
+}
+function hideFB(){
+  document.getElementById('fbBox').className='fb';
+  const fe=document.getElementById('fb-empty');if(fe)fe.style.display='block';
+}
 function updateSc(){
   document.getElementById('scoreVal').textContent=`${score} pts`;
   document.getElementById('stS').textContent=score;
@@ -2356,20 +2429,26 @@ function veResetGrids(){
   const vbr=document.getElementById('viewsBadge');
   if(vbr)vbr.classList.remove('show');
   veRenderAll();
-  document.getElementById('veEditNote').textContent='Vistas restauradas ao original.';
+  document.getElementById('veEditNote').textContent='Vistas restauradas ao estado atual do exercício.';
   document.getElementById('veEditNote').style.color='var(--gn2)';
 }
 
 // ── Save edited views ──────────────────────────────────────────────
 function veSaveEdit(){
-  customViews[curEx]={front:gridClone(ve.F),left:gridClone(ve.L),top:gridClone(ve.T)};
-  drawViews({front:ve.F,left:ve.L,top:ve.T});
-  document.getElementById('veBtnReset').style.display='inline-flex';
-  document.getElementById('veEditNote').innerHTML='✅ Vistas salvas para <b>'+EX[curEx].name+'</b>.';
+  // ── Tornar as vistas editadas o novo original permanente ──────────
+  EX[curEx].front=gridClone(ve.F);
+  EX[curEx].left =gridClone(ve.L);
+  EX[curEx].top  =gridClone(ve.T);
+  // Limpar customViews — não é mais necessário, o original foi atualizado
+  delete customViews[curEx];
+  // Renderizar vistas atualizadas
+  drawViews(EX[curEx]);
+  document.getElementById('veBtnReset').style.display='none';
+  document.getElementById('veEditNote').innerHTML='✅ Vistas de <b>'+EX[curEx].name+'</b> salvas como nova referência.';
   document.getElementById('veEditNote').style.color='var(--gn)';
-  // Show custom view badge
+  // Ocultar badge (não há mais customização pendente)
   const vbadge=document.getElementById('viewsBadge');
-  if(vbadge)vbadge.classList.add('show');
+  if(vbadge)vbadge.classList.remove('show');
   setTimeout(closeViewEditor,900);
 }
 
