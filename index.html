@@ -1209,6 +1209,7 @@ header{
   </div>
   <div class="modal-foot">
     <button class="btn" onclick="closeViewEditor()">Cancelar</button>
+    <button class="btn dn" id="veBtnDelete" onclick="veDeleteEx()" style="display:none;" title="Excluir este exercício">🗑 Excluir</button>
     <button class="btn" id="veBtnReset" onclick="veResetGrids()" style="border-color:#d97706;color:#d97706;display:none;">↺ Original</button>
     <button class="btn gn" id="veBtnSave" onclick="veSaveEdit()">💾 Salvar Vistas</button>
     <button class="btn gn" id="veBtnCreate" onclick="veCreateEx()" style="display:none;">＋ Criar Exercício</button>
@@ -2131,66 +2132,45 @@ function loadEx(){
 function drawViews(ex){
   const CELL=18, PAD=4;
 
-  function renderGrid(el, grid){
-    if(!el||!grid||!grid.length)return;
-    const rows=grid.length, cols=grid[0].length;
+  // Renderiza uma vista a partir de segmentos de nó {x1,y1,x2,y2}
+  function renderSegs(el, segs, rows, cols){
+    if(!el) return;
     el.width  = cols*CELL + PAD*2;
     el.height = rows*CELL + PAD*2;
     const c=el.getContext('2d');
     c.clearRect(0,0,el.width,el.height);
-
-    // ── fundo branco ──
-    c.fillStyle='#FEFCF8';
-    c.fillRect(0,0,el.width,el.height);
-
-    // ── grade de referência (pontilhada, muito suave) ──
-    c.strokeStyle='rgba(180,172,162,0.35)';
-    c.lineWidth=0.5;
-    c.setLineDash([2,3]);
-    for(let r=0;r<=rows;r++){
-      c.beginPath();
-      c.moveTo(PAD, PAD+r*CELL);
-      c.lineTo(PAD+cols*CELL, PAD+r*CELL);
-      c.stroke();
-    }
-    for(let co=0;co<=cols;co++){
-      c.beginPath();
-      c.moveTo(PAD+co*CELL, PAD);
-      c.lineTo(PAD+co*CELL, PAD+rows*CELL);
-      c.stroke();
-    }
+    c.fillStyle='#FEFCF8'; c.fillRect(0,0,el.width,el.height);
+    // grade de referência
+    c.strokeStyle='rgba(180,172,162,0.35)'; c.lineWidth=0.5; c.setLineDash([2,3]);
+    for(let r=0;r<=rows;r++){c.beginPath();c.moveTo(PAD,PAD+r*CELL);c.lineTo(PAD+cols*CELL,PAD+r*CELL);c.stroke();}
+    for(let co=0;co<=cols;co++){c.beginPath();c.moveTo(PAD+co*CELL,PAD);c.lineTo(PAD+co*CELL,PAD+rows*CELL);c.stroke();}
     c.setLineDash([]);
+    // arestas
+    c.strokeStyle='#1A1714'; c.lineWidth=1.6; c.lineCap='round';
+    segs.forEach(s=>{
+      c.beginPath();
+      c.moveTo(PAD+s.x1*CELL, PAD+s.y1*CELL);
+      c.lineTo(PAD+s.x2*CELL, PAD+s.y2*CELL);
+      c.stroke();
+    });
+  }
 
-    // helper: célula (r,co) está preenchida?
+  // Compatibilidade: converte grid[][] → segs se não houver _segs
+  function renderGrid(el, grid){
+    if(!el||!grid||!grid.length) return;
+    const rows=grid.length, cols=grid[0].length;
     const on=(r,co)=>r>=0&&r<rows&&co>=0&&co<cols&&grid[r][co]===1;
-
-    // ── arestas internas: segmentos entre preenchido e vazio ──
-    // Traçamos cada aresta UMA vez, coletando segmentos e depois desenhando
     const segs=[];
-
     for(let r=0;r<rows;r++){
       for(let co=0;co<cols;co++){
         if(!on(r,co)) continue;
-        const x=PAD+co*CELL, y=PAD+r*CELL;
-
-        // aresta superior (entre r-1 e r)
-        if(!on(r-1,co)) segs.push([x,y, x+CELL,y]);
-        // aresta inferior (entre r e r+1)
-        if(!on(r+1,co)) segs.push([x,y+CELL, x+CELL,y+CELL]);
-        // aresta esquerda (entre co-1 e co)
-        if(!on(r,co-1)) segs.push([x,y, x,y+CELL]);
-        // aresta direita (entre co e co+1)
-        if(!on(r,co+1)) segs.push([x+CELL,y, x+CELL,y+CELL]);
+        if(!on(r-1,co)) segs.push({x1:co,y1:r,   x2:co+1,y2:r});
+        if(!on(r+1,co)) segs.push({x1:co,y1:r+1,  x2:co+1,y2:r+1});
+        if(!on(r,co-1)) segs.push({x1:co,y1:r,    x2:co,  y2:r+1});
+        if(!on(r,co+1)) segs.push({x1:co+1,y1:r,  x2:co+1,y2:r+1});
       }
     }
-
-    // Desenhar todas as arestas de contorno
-    c.strokeStyle='#1A1714';
-    c.lineWidth=1.6;
-    c.lineCap='square';
-    segs.forEach(([x1,y1,x2,y2])=>{
-      c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
-    });
+    renderSegs(el, segs, rows, cols);
   }
 
   const cvF=document.getElementById('cvF');
@@ -2198,9 +2178,19 @@ function drawViews(ex){
   const cvL=document.getElementById('cvL');
   const vempty=document.querySelector('.vempty');
 
-  renderGrid(cvF, ex.front); // V.F.: cols=x, rows=z
-  renderGrid(cvT, ex.top);   // V.S.: cols=x, rows=y
-  renderGrid(cvL, ex.left);  // V.L.E.: cols=y, rows=z
+  // Usar _segs se disponível (exercícios editados no novo editor)
+  if(ex.front_segs!=null){
+    const fRows=ex.front.length, fCols=ex.front[0].length;
+    const tRows=ex.top.length,   tCols=ex.top[0].length;
+    const lRows=ex.left.length,  lCols=ex.left[0].length;
+    renderSegs(cvF, ex.front_segs, fRows, fCols);
+    renderSegs(cvT, ex.top_segs,   tRows, tCols);
+    renderSegs(cvL, ex.left_segs,  lRows, lCols);
+  } else {
+    renderGrid(cvF, ex.front);
+    renderGrid(cvT, ex.top);
+    renderGrid(cvL, ex.left);
+  }
 
   // Enforce NBR alignment:
   // VF and VS share x-dimension → must have same canvas width
@@ -2358,19 +2348,18 @@ function gridNorm(g){
 function openViewEditor(){
   const ex=EX[curEx];
   const cv2=customViews[curEx];
-  // Manter ve[] sincronizado para veResize e veResetGrids
   ve.F=gridClone(gridNorm(cv2?cv2.front:ex.front));
   ve.L=gridClone(gridNorm(cv2?cv2.left:ex.left));
   ve.T=gridClone(gridNorm(cv2?cv2.top:ex.top));
-  // Converter grades → segmentos e definir dimensões
   ['F','L','T'].forEach(k=>{
     const g=ve[k];
     veGrid[k]={rows:g.length, cols:g[0].length};
-    veSegs[k]=gridToSegs(g);
+    // Carregar _segs se disponível, senão converter de grid
+    const segKey={'F':'front_segs','L':'left_segs','T':'top_segs'}[k];
+    veSegs[k]=ex[segKey] ? ex[segKey].map(s=>({...s})) : gridToSegs(g);
     veDrawState[k]={startNode:null,tempEnd:null,hoverNode:null};
-    // Forçar reinicialização dos listeners ao reabrir
-    const cv=document.getElementById('veg'+k);
-    if(cv) cv._veInit=false;
+    const cvEl=document.getElementById('veg'+k);
+    if(cvEl) cvEl._veInit=false;
   });
   veMode='edit';
   switchMTab('edit');
@@ -2378,7 +2367,9 @@ function openViewEditor(){
   veRenderAll();
   document.getElementById('veModal').classList.add('open');
   document.getElementById('veModalTitle').textContent=`✎ Editar Vistas — ${ex.name}`;
-  document.getElementById('veBtnReset').style.display=customViews[curEx]?'inline-flex':'none';
+  document.getElementById('veBtnReset').style.display=(ex.front_segs||customViews[curEx])?'inline-flex':'none';
+  // Botão Excluir — visível para qualquer exercício (com confirmação)
+  document.getElementById('veBtnDelete').style.display='inline-flex';
 }
 
 function closeViewEditor(){
@@ -2810,6 +2801,8 @@ function veResetGrids(){
   ve.F=gridClone(gridNorm(ex.front));
   ve.L=gridClone(gridNorm(ex.left));
   ve.T=gridClone(gridNorm(ex.top));
+  // Limpar _segs salvos e recarregar do grid original
+  delete ex.front_segs; delete ex.top_segs; delete ex.left_segs;
   ['F','L','T'].forEach(k=>{
     veGrid[k]={rows:ve[k].length,cols:ve[k][0].length};
     veSegs[k]=gridToSegs(ve[k]);
@@ -2820,31 +2813,47 @@ function veResetGrids(){
   const vbr=document.getElementById('viewsBadge');
   if(vbr)vbr.classList.remove('show');
   veRenderAll();
-  document.getElementById('veEditNote').textContent='Vistas restauradas ao estado atual do exercício.';
+  document.getElementById('veEditNote').textContent='Vistas restauradas ao estado original do exercício.';
   document.getElementById('veEditNote').style.color='var(--gn2)';
 }
 
 // ── Save edited views ──────────────────────────────────────────────
 function veSaveEdit(){
-  // Converter segmentos → grades para salvar em EX[curEx]
-  ['F','L','T'].forEach(k=>{
-    const{rows,cols}=veGrid[k];
-    ve[k]=segsToGrid(veSegs[k],rows,cols);
-  });
-  EX[curEx].front=gridClone(ve.F);
-  EX[curEx].left =gridClone(ve.L);
-  EX[curEx].top  =gridClone(ve.T);
+  const ex=EX[curEx];
+  // Salvar segmentos diretamente — sem conversão segs→grid (que era a fonte do bug)
+  ex.front_segs=[...veSegs.F];
+  ex.top_segs  =[...veSegs.T];
+  ex.left_segs =[...veSegs.L];
+  // Manter grid[] para compatibilidade com veResize e outros sistemas
+  ex.front=gridClone(ve.F);
+  ex.left =gridClone(ve.L);
+  ex.top  =gridClone(ve.T);
   delete customViews[curEx];
-  drawViews(EX[curEx]);
+  drawViews(ex);
   document.getElementById('veBtnReset').style.display='none';
-  document.getElementById('veEditNote').innerHTML='✅ Vistas de <b>'+EX[curEx].name+'</b> salvas como nova referência.';
+  document.getElementById('veEditNote').innerHTML='✅ Vistas de <b>'+ex.name+'</b> salvas como nova referência.';
   document.getElementById('veEditNote').style.color='var(--gn)';
   const vbadge=document.getElementById('viewsBadge');
   if(vbadge)vbadge.classList.remove('show');
   setTimeout(closeViewEditor,900);
 }
 
-// ── Create new exercise ────────────────────────────────────────────
+// ── Excluir exercício atual ────────────────────────────────────────
+function veDeleteEx(){
+  const ex=EX[curEx];
+  if(!confirm(`Excluir o exercício "${ex.name}"?\n\nEsta ação não pode ser desfeita.`)) return;
+  if(EX.length<=1){
+    alert('Não é possível excluir o único exercício disponível.');
+    return;
+  }
+  // Remover do array
+  EX.splice(curEx,1);
+  // Ajustar índice atual
+  const newIdx=Math.min(curEx, EX.length-1);
+  closeViewEditor();
+  buildSel();
+  selEx(newIdx);
+}
 function veCreateEx(){
   const name=document.getElementById('newExName').value.trim();
   const desc=document.getElementById('newExDesc').value.trim();
