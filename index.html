@@ -222,11 +222,14 @@ header{
 }
 
 /* ═══════════════════════════════════════════
-   PRACTICE TAB — canvas top, views bottom
+   PRACTICE TAB
+   Estrutura:
+     .playout (coluna)
+       .rpanel   → toolbar + canvas (flex:1, cresce)
+       .lpanel   → faixa inferior fixa: [seletor|feedback] [vistas]
 ═══════════════════════════════════════════ */
 #tp.active{display:flex;}
 
-/* Main vertical stack */
 .playout{
   flex:1;
   display:flex;
@@ -234,58 +237,66 @@ header{
   overflow:hidden;
 }
 
-/* ── CANVAS ZONE (top, grows to fill) ── */
+/* ── Canvas zone — ocupa todo o espaço disponível ── */
 .rpanel{
   flex:1;
+  min-height:0;
   display:flex;
   flex-direction:column;
   overflow:hidden;
   background:var(--bg);
-  min-height:0;
 }
 
-/* ── BOTTOM INFO STRIP ── */
+/* ── Faixa inferior fixa ── */
 .lpanel{
-  background:var(--surface);
-  border-top:1px solid var(--bd);
   flex-shrink:0;
-  overflow:hidden;
-  box-shadow:0 -3px 12px rgba(0,0,0,.06);
-}
-
-/* Strip inner layout: exercise picker | views | feedback */
-.lin{
+  height:var(--strip-h, 152px);
+  background:var(--surface);
+  border-top:1.5px solid var(--bd);
   display:flex;
   flex-direction:row;
-  align-items:flex-start;
-  gap:0;
-  height:100%;
   overflow:hidden;
+  box-shadow:0 -2px 10px rgba(0,0,0,.06);
 }
 
-/* Three sections inside the bottom strip */
-.strip-sec{
+/* Coluna esquerda: seletor + feedback */
+.strip-left{
+  width:210px;
+  min-width:170px;
   flex-shrink:0;
-  padding:8px 10px;
   border-right:1px solid var(--bd);
   display:flex;
   flex-direction:column;
+  padding:8px 10px;
   gap:6px;
   overflow:hidden;
 }
-.strip-sec:last-child{border-right:none;flex:1;}
 
-/* Collapse mobile sections on very small screens */
-@media(max-width:600px){
-  .lin{flex-wrap:wrap;overflow-y:auto;max-height:44vw;}
-  .strip-sec{padding:6px 8px;}
-}
-@media(min-width:601px){
-  .lpanel{max-height:160px;}
-  .lin{overflow:hidden;}
+/* Coluna direita: vistas */
+.strip-right{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  padding:6px 10px 6px 8px;
+  gap:4px;
+  overflow:hidden;
 }
 
-.lin-pad{padding:10px 14px;}  /* legacy fallback */
+/* Em telas muito estreitas (<480px): empilhar verticalmente */
+@media(max-width:479px){
+  .lpanel{
+    height:auto;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .strip-left{width:100%;border-right:none;border-bottom:1px solid var(--bd);}
+  .strip-right{overflow-x:auto;}
+}
+
+/* .lin existe apenas para compatibilidade — não é mais usado no layout */
+.lin{display:contents;}
+.lin-pad{padding:10px 14px;}
 
 /* Section labels */
 .slbl{
@@ -739,14 +750,14 @@ header{
   margin-bottom:7px;
 }
 .vedgrid{
-  display:inline-grid;gap:1px;
-  background:var(--bd);border:1.5px solid var(--bd);
-  border-radius:4px;overflow:hidden;
-  cursor:pointer;user-select:none;
+  display:block;
+  cursor:crosshair;
+  user-select:none;
+  border-radius:4px;
 }
-.vedcell{width:28px;height:28px;background:var(--surface);transition:.08s;}
-.vedcell.on{background:#1A1714;}
-.vedcell:hover{opacity:.7;}
+/* .vedcell e .vedcell.on mantidos apenas para compatibilidade com código legado */
+.vedcell{display:none;}
+.vedcell.on{display:none;}
 .resbtn{
   font-size:11px;padding:2px 7px;
   border:1px solid var(--bd);border-radius:4px;
@@ -827,7 +838,7 @@ header{
 <div id="tp" class="tab-pane active">
 <div class="playout">
 
-  <!-- ── TOP: Toolbar + Canvas isométrico ── -->
+  <!-- ── TOPO: Toolbar + Canvas isométrico ── -->
   <div class="rpanel">
     <div class="dtbar">
       <button class="btn active" id="btnLine" onclick="setTool('line')" title="Linha">
@@ -861,55 +872,46 @@ header{
     <div class="solnote" id="solNote">👁 Gabarito em verde · clique <b>✏️ Editar</b> para modificar ou 🗑 para recomeçar</div>
   </div>
 
-  <!-- ── BOTTOM STRIP: Exercício | Vistas | Feedback ── -->
+  <!-- ── FAIXA INFERIOR: [Seletor + Feedback] | [Vistas] ── -->
   <div class="lpanel">
-  <div class="lin">
 
-    <!-- Seção 1: Exercício -->
-    <div class="strip-sec" style="min-width:160px;max-width:220px;">
-      <div class="slbl" style="margin:0 0 2px;">Exercício</div>
-      <div class="exrow" style="margin:0;">
-        <select class="exsel" id="exSel" onchange="selEx(this.value)"></select>
-        <button class="btn ac" onclick="nextEx()" title="Próximo" style="padding:6px 9px;">
+    <!-- Coluna esquerda: seletor de exercício + feedback -->
+    <div class="strip-left">
+      <div class="slbl" style="margin:0;">Exercício</div>
+      <div style="display:flex;gap:5px;align-items:center;">
+        <select class="exsel" id="exSel" onchange="selEx(this.value)" style="font-size:12px;padding:5px 22px 5px 8px;"></select>
+        <button class="btn ac" onclick="nextEx()" title="Próximo" style="padding:5px 8px;flex-shrink:0;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-      <div class="exdesc" id="exDesc" style="margin:0;font-size:11px;padding:5px 8px;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">—</div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;">
-        <div id="customBadge" class="badge amber" style="margin:0;">✎ Gabarito editado</div>
-        <div id="viewsBadge" class="badge blue" style="margin:0;">⊞ Vistas editadas</div>
+      <div id="customBadge" class="badge amber" style="margin:0;font-size:9px;padding:2px 6px;">✎ Gabarito editado</div>
+      <!-- Feedback inline -->
+      <div class="fb" id="fbBox" style="margin:0;font-size:11px;flex:1;align-items:flex-start;">
+        <span class="fbico" id="fbIco" style="font-size:14px;">✅</span>
+        <span id="fbTxt"></span>
+      </div>
+      <div id="fb-empty" style="font-size:11px;color:var(--ink3);line-height:1.4;flex:1;">
+        Observe as vistas ao lado, desenhe a perspectiva e clique <strong>✓ Verificar</strong>
       </div>
     </div>
 
-    <!-- Seção 2: Vistas Ortográficas -->
-    <div class="strip-sec" style="flex:1;min-width:0;overflow:hidden;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-        <div class="slbl" style="margin:0;">Vistas — NBR 17006</div>
-        <button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="openViewEditor()">✎ Editar</button>
+    <!-- Coluna direita: vistas ortográficas -->
+    <div class="strip-right">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="slbl" style="margin:0;flex:1;">Vistas — NBR 17006</span>
+        <button class="btn" style="font-size:9px;padding:2px 7px;" onclick="openViewEditor()">✎ Editar</button>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:8px;overflow-x:auto;padding-bottom:2px;">
+      <!-- vgrid com scroll horizontal em caso de exercícios grandes -->
+      <div style="overflow-x:auto;flex:1;display:flex;align-items:flex-start;">
         <div class="vgrid" style="margin:0;flex-shrink:0;">
           <div class="vcell"><div class="vlbl">V.F. — Frontal</div><canvas id="cvF"></canvas></div>
           <div class="vcell"><div class="vlbl">V.L.E. — Lat. Esq.</div><canvas id="cvL"></canvas></div>
           <div class="vcell"><div class="vlbl">V.S. — Superior</div><canvas id="cvT"></canvas></div>
           <div class="vempty" style="font-size:9px;">—</div>
         </div>
-        <p class="vnote" style="margin:0;align-self:flex-end;font-size:9px;writing-mode:horizontal-tb;">V.S. abaixo V.F.<br>V.L.E. à direita</p>
       </div>
     </div>
 
-    <!-- Seção 3: Feedback -->
-    <div class="strip-sec" style="min-width:140px;max-width:220px;justify-content:center;">
-      <div class="fb" id="fbBox" style="margin:0;flex:1;align-items:center;">
-        <span class="fbico" id="fbIco">✅</span>
-        <span id="fbTxt"></span>
-      </div>
-      <div id="fb-empty" style="font-size:11px;color:var(--ink3);text-align:center;line-height:1.5;">
-        Desenhe a perspectiva isométrica e clique <strong>✓ Verificar</strong>
-      </div>
-    </div>
-
-  </div>
   </div>
 
 </div>
@@ -1121,14 +1123,27 @@ header{
       <button class="mtab" id="mtabNew" onclick="switchMTab('new')">＋ Novo Exercício</button>
     </div>
     <div id="mtabEditPane">
-      <p style="font-size:12px;color:var(--ink2);margin-bottom:12px;line-height:1.6;">
-        Clique nas células para alternar preenchido/vazio. Use os botões <b>+ −</b> para adicionar ou remover linhas e colunas.
-      </p>
+      <!-- Toolbar de ferramentas do editor -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+        <button class="btn active" id="veTool-draw" onclick="setVeTool('draw')" style="font-size:11px;padding:4px 10px;gap:4px;">
+          <svg width="12" height="12" viewBox="0 0 13 13"><line x1="1" y1="12" x2="12" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Desenhar Linha
+        </button>
+        <button class="btn" id="veTool-erase" onclick="setVeTool('erase')" style="font-size:11px;padding:4px 10px;gap:4px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l4-4"/></svg>
+          Apagar Linha
+        </button>
+        <button class="btn" id="veTool-undo" onclick="veUndo()" title="Desfazer última aresta" style="font-size:11px;padding:4px 10px;">↩</button>
+        <button class="btn dn" onclick="veClear()" title="Limpar todas as arestas" style="font-size:11px;padding:4px 10px;">🗑</button>
+        <span style="font-size:10px;color:var(--ink3);margin-left:2px;" id="veToolHint">
+          Clique em dois nós para desenhar uma aresta · <b>+ −</b> adiciona/remove linhas e colunas
+        </span>
+      </div>
       <div class="veditor">
         <div class="veditor-row">
           <div class="vepanel">
             <div class="vepanel-title">V.F. — Frontal (cols=X, linhas=Z)</div>
-            <div class="vedgrid" id="vegF"></div>
+            <canvas class="vedgrid" id="vegF"></canvas>
             <div class="resbtnrow">
               <button class="resbtn" onclick="veResize('F','addCol')">+ col</button>
               <button class="resbtn" onclick="veResize('F','delCol')">− col</button>
@@ -1138,7 +1153,7 @@ header{
           </div>
           <div class="vepanel">
             <div class="vepanel-title">V.L.E. — Lat. Esq. (cols=Y, linhas=Z)</div>
-            <div class="vedgrid" id="vegL"></div>
+            <canvas class="vedgrid" id="vegL"></canvas>
             <div class="resbtnrow">
               <button class="resbtn" onclick="veResize('L','addCol')">+ col</button>
               <button class="resbtn" onclick="veResize('L','delCol')">− col</button>
@@ -1150,7 +1165,7 @@ header{
         <div class="veditor-row">
           <div class="vepanel">
             <div class="vepanel-title">V.S. — Superior (cols=X, linhas=Y)</div>
-            <div class="vedgrid" id="vegT"></div>
+            <canvas class="vedgrid" id="vegT"></canvas>
             <div class="resbtnrow">
               <button class="resbtn" onclick="veResize('T','addCol')">+ col</button>
               <button class="resbtn" onclick="veResize('T','delCol')">− col</button>
@@ -1905,9 +1920,12 @@ function render(){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#FEFCF8';ctx.fillRect(0,0,W,H);
   drawGrid();
-  // NO AXES — only grid
   if(solVis)drawSol();
-  lines.forEach(l=>ln(l.x1,l.y1,l.x2,l.y2,l.color,2.2));
+  // lines[] stored as grid coords {gx1,gy1,gz1,gx2,gy2,gz2,color} → reproject each render
+  lines.forEach(l=>{
+    const a=iso(l.gx1,l.gy1,l.gz1),b=iso(l.gx2,l.gy2,l.gz2);
+    ln(a.x,a.y,b.x,b.y,l.color,2.2);
+  });
   if(tempLine)ln(tempLine.x1,tempLine.y1,tempLine.x2,tempLine.y2,curColor,2,[8,5]);
 }
 
@@ -2003,8 +2021,14 @@ function onUp(e){
   e.preventDefault();isPan=false;
   if(!isDown||!startPt)return;
   const pos=evXY(e),s=snap(pos.x,pos.y);
-  if(Math.hypot(s.x-startPt.x,s.y-startPt.y)>6)
-    lines.push({x1:startPt.x,y1:startPt.y,x2:s.x,y2:s.y,color:curColor});
+  // Only commit if endpoints are different (non-zero length)
+  if(Math.hypot(s.x-startPt.x,s.y-startPt.y)>6){
+    // Store in ISO GRID coords so zoom/pan reprojection works
+    const a=snapGrid(startPt.x,startPt.y);
+    const b=snapGrid(s.x,s.y);
+    if(a.gx!==b.gx||a.gy!==b.gy||a.gz!==b.gz)
+      lines.push({gx1:a.gx,gy1:a.gy,gz1:a.gz,gx2:b.gx,gy2:b.gy,gz2:b.gz,color:curColor});
+  }
   isDown=false;tempLine=null;startPt=null;render();
 }
 function onWheel(e){
@@ -2014,7 +2038,11 @@ function onWheel(e){
 
 function eraseAt(px,py){
   const T=14;
-  lines=lines.filter(l=>distPS(px,py,l.x1,l.y1,l.x2,l.y2)>T);render();
+  lines=lines.filter(l=>{
+    const a=iso(l.gx1,l.gy1,l.gz1),b=iso(l.gx2,l.gy2,l.gz2);
+    return distPS(px,py,a.x,a.y,b.x,b.y)>T;
+  });
+  render();
 }
 function distPS(px,py,x1,y1,x2,y2){
   const dx=x2-x1,dy=y2-y1,lsq=dx*dx+dy*dy;
@@ -2076,13 +2104,21 @@ function selEx(idx){
 }
 function nextEx(){selEx((curEx+1)%EX.length);}
 function loadEx(){
-  document.getElementById('exDesc').textContent=EX[curEx].desc;
+  document.getElementById('exDesc')&&(document.getElementById('exDesc').textContent=EX[curEx].desc);
   drawViews(EX[curEx]);
   updCustomBadge();
-  // Views badge not shown anymore (saves are permanent)
   const vb=document.getElementById('viewsBadge');
   if(vb)vb.classList.remove('show');
   render();
+  // Re-fit strip height to new views
+  setTimeout(()=>{
+    const vg=document.querySelector('.vgrid');
+    const sl=document.querySelector('.strip-left');
+    const lp=document.querySelector('.lpanel');
+    if(!vg||!sl||!lp)return;
+    const h=Math.max(vg.offsetHeight+20,sl.scrollHeight,120);
+    lp.style.height=h+'px';
+  },30);
 }
 
 // ── Draw orthographic views — NBR 17006 (1º Diedro) ──────────────
@@ -2093,37 +2129,68 @@ function loadEx(){
 //   VF e VS → mesma largura (compartilham dimensão x)
 //   VF e VLE → mesma altura (compartilham dimensão z)
 function drawViews(ex){
-  const CELL=22, PAD=4;
+  const CELL=18, PAD=4;
 
   function renderGrid(el, grid){
     if(!el||!grid||!grid.length)return;
     const rows=grid.length, cols=grid[0].length;
-    el.width = cols*CELL + PAD*2;
+    el.width  = cols*CELL + PAD*2;
     el.height = rows*CELL + PAD*2;
     const c=el.getContext('2d');
     c.clearRect(0,0,el.width,el.height);
-    c.fillStyle='#FEFCF8'; c.fillRect(0,0,el.width,el.height);
 
-    // Filled cells
-    for(let r=0;r<rows;r++){
-      for(let co=0;co<cols;co++){
-        if(grid[r][co]){
-          c.fillStyle='#1C1917';
-          c.fillRect(PAD+co*CELL+1, PAD+r*CELL+1, CELL-2, CELL-2);
-        }
-      }
-    }
-    // Grid lines
-    c.strokeStyle='#C8C2B8'; c.lineWidth=0.5;
+    // ── fundo branco ──
+    c.fillStyle='#FEFCF8';
+    c.fillRect(0,0,el.width,el.height);
+
+    // ── grade de referência (pontilhada, muito suave) ──
+    c.strokeStyle='rgba(180,172,162,0.35)';
+    c.lineWidth=0.5;
+    c.setLineDash([2,3]);
     for(let r=0;r<=rows;r++){
-      c.beginPath();c.moveTo(PAD,PAD+r*CELL);c.lineTo(PAD+cols*CELL,PAD+r*CELL);c.stroke();
+      c.beginPath();
+      c.moveTo(PAD, PAD+r*CELL);
+      c.lineTo(PAD+cols*CELL, PAD+r*CELL);
+      c.stroke();
     }
     for(let co=0;co<=cols;co++){
-      c.beginPath();c.moveTo(PAD+co*CELL,PAD);c.lineTo(PAD+co*CELL,PAD+rows*CELL);c.stroke();
+      c.beginPath();
+      c.moveTo(PAD+co*CELL, PAD);
+      c.lineTo(PAD+co*CELL, PAD+rows*CELL);
+      c.stroke();
     }
-    // Outer border
-    c.strokeStyle='#1C1917'; c.lineWidth=1.5;
-    c.strokeRect(PAD, PAD, cols*CELL, rows*CELL);
+    c.setLineDash([]);
+
+    // helper: célula (r,co) está preenchida?
+    const on=(r,co)=>r>=0&&r<rows&&co>=0&&co<cols&&grid[r][co]===1;
+
+    // ── arestas internas: segmentos entre preenchido e vazio ──
+    // Traçamos cada aresta UMA vez, coletando segmentos e depois desenhando
+    const segs=[];
+
+    for(let r=0;r<rows;r++){
+      for(let co=0;co<cols;co++){
+        if(!on(r,co)) continue;
+        const x=PAD+co*CELL, y=PAD+r*CELL;
+
+        // aresta superior (entre r-1 e r)
+        if(!on(r-1,co)) segs.push([x,y, x+CELL,y]);
+        // aresta inferior (entre r e r+1)
+        if(!on(r+1,co)) segs.push([x,y+CELL, x+CELL,y+CELL]);
+        // aresta esquerda (entre co-1 e co)
+        if(!on(r,co-1)) segs.push([x,y, x,y+CELL]);
+        // aresta direita (entre co e co+1)
+        if(!on(r,co+1)) segs.push([x+CELL,y, x+CELL,y+CELL]);
+      }
+    }
+
+    // Desenhar todas as arestas de contorno
+    c.strokeStyle='#1A1714';
+    c.lineWidth=1.6;
+    c.lineCap='square';
+    segs.forEach(([x1,y1,x2,y2])=>{
+      c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
+    });
   }
 
   const cvF=document.getElementById('cvF');
@@ -2164,8 +2231,13 @@ function checkAns(){
   const sol=getSolEdges();
   let match=0;
   const tol=U()*0.85;
+  // Reproject user lines to current canvas coords for comparison
+  const projected=lines.map(l=>{
+    const a=iso(l.gx1,l.gy1,l.gz1),b=iso(l.gx2,l.gy2,l.gz2);
+    return{x1:a.x,y1:a.y,x2:b.x,y2:b.y};
+  });
   sol.forEach(s=>{
-    const ok=lines.some(l=>{
+    const ok=projected.some(l=>{
       const d1=Math.hypot(l.x1-s.x1,l.y1-s.y1)+Math.hypot(l.x2-s.x2,l.y2-s.y2);
       const d2=Math.hypot(l.x1-s.x2,l.y1-s.y2)+Math.hypot(l.x2-s.x1,l.y2-s.y1);
       return Math.min(d1,d2)<tol*2;
@@ -2186,13 +2258,16 @@ function showSol(){
   render();
 }
 function editSol(){
-  // Materialise solution edges as editable green lines
-  getSolEdges().forEach(e=>{
+  // Materialise solution edges as editable green lines (in grid coords)
+  // getSolEdges() returns canvas coords — convert back to grid for storage
+  EX[curEx].edges.forEach(e=>{
+    const gx1=e[0][0],gy1=e[0][1],gz1=e[0][2];
+    const gx2=e[1][0],gy2=e[1][1],gz2=e[1][2];
     const dup=lines.some(l=>
-      (Math.hypot(l.x1-e.x1,l.y1-e.y1)+Math.hypot(l.x2-e.x2,l.y2-e.y2))<2 ||
-      (Math.hypot(l.x1-e.x2,l.y1-e.y2)+Math.hypot(l.x2-e.x1,l.y2-e.y1))<2
+      (l.gx1===gx1&&l.gy1===gy1&&l.gz1===gz1&&l.gx2===gx2&&l.gy2===gy2&&l.gz2===gz2)||
+      (l.gx1===gx2&&l.gy1===gy2&&l.gz1===gz2&&l.gx2===gx1&&l.gy2===gy1&&l.gz2===gz1)
     );
-    if(!dup) lines.push({x1:e.x1,y1:e.y1,x2:e.x2,y2:e.y2,color:'#166534'});
+    if(!dup) lines.push({gx1,gy1,gz1,gx2,gy2,gz2,color:'#166534'});
   });
   solVis=false;
   document.getElementById('solNote').style.display='none';
@@ -2209,28 +2284,20 @@ function saveSol(){
     showFB('wn','⚠️','Nenhuma aresta para salvar. Desenhe o gabarito correto primeiro.');
     return;
   }
-  // Convert each line's canvas endpoints back to nearest iso grid integer coords
-  const gridEdges=lines.map(l=>{
-    const a=snapGrid(l.x1,l.y1);
-    const b=snapGrid(l.x2,l.y2);
-    return[[a.gx,a.gy,a.gz],[b.gx,b.gy,b.gz]];
-  });
-  // Deduplicate (same pair regardless of direction)
+  // lines[] already stored in grid coords {gx1,gy1,gz1,gx2,gy2,gz2}
   const seen=new Set();
-  const deduped=gridEdges.filter(e=>{
+  const deduped=lines.map(l=>[[l.gx1,l.gy1,l.gz1],[l.gx2,l.gy2,l.gz2]]).filter(e=>{
     const k=e[0].join(',')+'>'+e[1].join(',');
     const kr=e[1].join(',')+'>'+e[0].join(',');
     if(seen.has(k)||seen.has(kr))return false;
     seen.add(k);return true;
   });
-  // ── Tornar o gabarito editado o novo original permanente ──────────
-  // Substitui EX[curEx].edges diretamente → não há mais "original anterior"
+  // Tornar o gabarito editado o novo original permanente
   EX[curEx].edges=deduped;
-  // Limpa qualquer customEdges anterior (não é mais necessário)
   delete customEdges[curEx];
   document.getElementById('btnSave').style.display='none';
   updCustomBadge();
-  showFB('ok','💾',`Gabarito de <b>${EX[curEx].name}</b> salvo como nova referência. Será usado em todas as verificações.`);
+  showFB('ok','💾',`Gabarito de <b>${EX[curEx].name}</b> salvo como nova referência.`);
   solVis=false;
   document.getElementById('btnSol').style.display='inline-flex';
   document.getElementById('btnEdit').style.display='none';
@@ -2290,17 +2357,27 @@ function gridNorm(g){
 
 function openViewEditor(){
   const ex=EX[curEx];
-  // Use customViews if available, else default
   const cv2=customViews[curEx];
+  // Manter ve[] sincronizado para veResize e veResetGrids
   ve.F=gridClone(gridNorm(cv2?cv2.front:ex.front));
   ve.L=gridClone(gridNorm(cv2?cv2.left:ex.left));
   ve.T=gridClone(gridNorm(cv2?cv2.top:ex.top));
+  // Converter grades → segmentos e definir dimensões
+  ['F','L','T'].forEach(k=>{
+    const g=ve[k];
+    veGrid[k]={rows:g.length, cols:g[0].length};
+    veSegs[k]=gridToSegs(g);
+    veDrawState[k]={startNode:null,tempEnd:null,hoverNode:null};
+    // Forçar reinicialização dos listeners ao reabrir
+    const cv=document.getElementById('veg'+k);
+    if(cv) cv._veInit=false;
+  });
   veMode='edit';
   switchMTab('edit');
+  setVeTool('draw');
   veRenderAll();
   document.getElementById('veModal').classList.add('open');
   document.getElementById('veModalTitle').textContent=`✎ Editar Vistas — ${ex.name}`;
-  // Show reset button only if there are custom views
   document.getElementById('veBtnReset').style.display=customViews[curEx]?'inline-flex':'none';
 }
 
@@ -2319,61 +2396,361 @@ function switchMTab(tab){
   document.getElementById('veBtnReset').style.display=(tab==='edit'&&customViews[curEx])?'inline-flex':'none';
 }
 
-// ── Render a grid editor ───────────────────────────────────────────
-function veRenderGrid(key){
-  const grid=ve[key];
-  const container=document.getElementById('veg'+key);
-  if(!container||!grid)return;
+// ══════════════════════════════════════════════════════════════════
+// EDITOR DE VISTAS — mecânica de segmentos (igual ao canvas isométrico)
+// ══════════════════════════════════════════════════════════════════
+const VE_CELL=26, VE_PAD=8;
+
+// veSegs[key] = [{x1,y1,x2,y2}]  em coordenadas de NÓ inteiros (0..cols × 0..rows)
+// veGrid[key] = {rows,cols}       dimensões da grade (definidas pelo resize)
+const veSegs={F:[],L:[],T:[]};
+const veGrid={F:{rows:3,cols:3},L:{rows:3,cols:3},T:{rows:3,cols:3}};
+
+// Estado de desenho por vista
+const veDrawState={
+  F:{startNode:null,tempEnd:null},
+  L:{startNode:null,tempEnd:null},
+  T:{startNode:null,tempEnd:null}
+};
+
+// ── Converter grid[][] → lista de segmentos de nó ─────────────────
+function gridToSegs(grid){
   const rows=grid.length, cols=grid[0].length;
-  container.style.gridTemplateColumns=`repeat(${cols},28px)`;
-  container.style.gridTemplateRows=`repeat(${rows},28px)`;
-  container.innerHTML='';
+  const on=(r,co)=>r>=0&&r<rows&&co>=0&&co<cols&&grid[r][co]===1;
+  const segs=[];
   for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const cell=document.createElement('div');
-      cell.className='vedcell'+(grid[r][c]?' on':'');
-      cell.dataset.r=r; cell.dataset.c=c; cell.dataset.k=key;
-      // Mouse events
-      cell.addEventListener('mousedown',e=>{
-        e.preventDefault();
-        veDragging=grid[r][c]?0:1;
-        grid[r][c]=veDragging;
-        cell.className='vedcell'+(grid[r][c]?' on':'');
-      });
-      cell.addEventListener('mouseenter',()=>{
-        if(veDragging===null)return;
-        grid[r][c]=veDragging;
-        cell.className='vedcell'+(grid[r][c]?' on':'');
-      });
-      // Touch events
-      cell.addEventListener('touchstart',e=>{
-        e.preventDefault();
-        veDragging=grid[r][c]?0:1;
-        grid[r][c]=veDragging;
-        cell.className='vedcell'+(grid[r][c]?' on':'');
-      },{passive:false});
-      cell.addEventListener('touchmove',e=>{
-        e.preventDefault();
-        const t=e.touches[0];
-        const el=document.elementFromPoint(t.clientX,t.clientY);
-        if(el&&el.classList.contains('vedcell')&&el.dataset.k===key){
-          const tr=parseInt(el.dataset.r),tc=parseInt(el.dataset.c);
-          if(grid[tr][tc]!==veDragging){
-            grid[tr][tc]=veDragging;
-            el.className='vedcell'+(veDragging?' on':'');
-          }
-        }
-      },{passive:false});
-      container.appendChild(cell);
+    for(let co=0;co<cols;co++){
+      if(!on(r,co)) continue;
+      // aresta superior → nós (co,r)→(co+1,r)
+      if(!on(r-1,co)) segs.push({x1:co,y1:r,  x2:co+1,y2:r});
+      // aresta inferior → nós (co,r+1)→(co+1,r+1)
+      if(!on(r+1,co)) segs.push({x1:co,y1:r+1,x2:co+1,y2:r+1});
+      // aresta esquerda → nós (co,r)→(co,r+1)
+      if(!on(r,co-1)) segs.push({x1:co,  y1:r,x2:co,  y2:r+1});
+      // aresta direita → nós (co+1,r)→(co+1,r+1)
+      if(!on(r,co+1)) segs.push({x1:co+1,y1:r,x2:co+1,y2:r+1});
     }
   }
+  return segs;
+}
+
+// ── Converter lista de segmentos → grid[][] (reconstrução por flood) ─
+// Abordagem: marcar arestas numa grade de bordas e fazer flood-fill
+function segsToGrid(segs, rows, cols){
+  // Células com arestas de borda
+  // hEdge[r][co] = true se há aresta horizontal entre linha r-1 e r, col co
+  // vEdge[r][co] = true se há aresta vertical entre col co-1 e co, lin r
+  const hEdge=Array.from({length:rows+1},()=>new Array(cols).fill(false));
+  const vEdge=Array.from({length:rows},()=>new Array(cols+1).fill(false));
+
+  segs.forEach(({x1,y1,x2,y2})=>{
+    const nx1=Math.round(x1),ny1=Math.round(y1);
+    const nx2=Math.round(x2),ny2=Math.round(y2);
+    if(ny1===ny2){
+      // aresta horizontal: y=ny1, entre col min(nx1,nx2)
+      const r=ny1, co=Math.min(nx1,nx2);
+      if(r>=0&&r<=rows&&co>=0&&co<cols) hEdge[r][co]=true;
+    } else {
+      // aresta vertical: x=nx1, entre lin min(ny1,ny2)
+      const co=nx1, r=Math.min(ny1,ny2);
+      if(co>=0&&co<=cols&&r>=0&&r<rows) vEdge[r][co]=true;
+    }
+  });
+
+  // Flood fill: começar de fora (exterior = vazio), propagar onde não há aresta
+  // Usar uma super-grade de células incluindo exterior (index -1 → index rows/cols)
+  // Simplificação: todas as células adjacentes ao exterior são "fora"
+  // se não houver aresta separando-as
+  const grid=Array.from({length:rows},()=>new Array(cols).fill(1)); // start all filled
+  // BFS flood from outside
+  const outside=new Set();
+  const queue=[];
+  const key2=(r,c)=>r*1000+c;
+  const enq=(r,c)=>{
+    const k=key2(r,c);
+    if(outside.has(k)) return;
+    outside.add(k);
+    queue.push([r,c]);
+  };
+  // seed: all border cells reachable from outside without crossing edges
+  // We use a virtual border at r=-1 and r=rows etc.
+  for(let co=0;co<cols;co++){
+    if(!hEdge[0][co]) enq(-1,co);      // top border
+    if(!hEdge[rows][co]) enq(rows,co); // bottom border
+  }
+  for(let r=0;r<rows;r++){
+    if(!vEdge[r][0]) enq(r,-1);       // left border
+    if(!vEdge[r][cols]) enq(r,cols);  // right border
+  }
+  let qi=0;
+  while(qi<queue.length){
+    const [r,c]=queue[qi++];
+    // try to move up (r→r-1): blocked by hEdge[r][c] (if c valid)
+    const up=r-1;
+    if(up>=-1&&(c<0||c>=cols||!hEdge[r][c])) enq(up,c);
+    // down (r→r+1): blocked by hEdge[r+1][c]
+    const dn=r+1;
+    if(dn<=rows&&(c<0||c>=cols||!hEdge[r+1]?.[c])) enq(dn,c);
+    // left (c→c-1): blocked by vEdge[r][c]
+    const le=c-1;
+    if(le>=-1&&(r<0||r>=rows||!vEdge[r]?.[c])) enq(r,le);
+    // right (c→c+1): blocked by vEdge[r][c+1]
+    const ri=c+1;
+    if(ri<=cols&&(r<0||r>=rows||!vEdge[r]?.[c+1])) enq(r,ri);
+  }
+  // cells reachable from outside → 0
+  for(let r=0;r<rows;r++){
+    for(let co=0;co<cols;co++){
+      if(outside.has(key2(r,co))) grid[r][co]=0;
+    }
+  }
+  return grid;
+}
+
+// ── Snap pixel do canvas ao nó inteiro mais próximo ──────────────
+function veSnapNode(cv, ex, ey, rows, cols){
+  const rect=cv.getBoundingClientRect();
+  const scaleX=cv.width/rect.width, scaleY=cv.height/rect.height;
+  const px=(ex-rect.left)*scaleX - VE_PAD;
+  const py=(ey-rect.top) *scaleY - VE_PAD;
+  // Nós estão a cada VE_CELL pixels
+  const nx=Math.round(px/VE_CELL);
+  const ny=Math.round(py/VE_CELL);
+  // Clamp to valid node range
+  const cx=Math.max(0,Math.min(cols,nx));
+  const cy=Math.max(0,Math.min(rows,ny));
+  // Px do nó mais próximo válido
+  const snapX=VE_PAD+cx*VE_CELL, snapY=VE_PAD+cy*VE_CELL;
+  // Distância em pixels CSS ao nó
+  const dPx=Math.hypot((ex-rect.left)-(snapX/scaleX),(ey-rect.top)-(snapY/scaleY));
+  return{nx:cx, ny:cy, px:snapX, py:snapY, dist:dPx};
+}
+
+// ── Distância pixel de ponto (px,py) ao segmento de nó s ─────────
+function veSegDistPx(px, py, s, rows, cols, scaleX, scaleY){
+  const x1=VE_PAD+s.x1*VE_CELL, y1=VE_PAD+s.y1*VE_CELL;
+  const x2=VE_PAD+s.x2*VE_CELL, y2=VE_PAD+s.y2*VE_CELL;
+  // px,py já em pixels do canvas
+  const dx=x2-x1, dy=y2-y1, lsq=dx*dx+dy*dy;
+  if(!lsq) return Math.hypot(px-x1,py-y1);
+  const t=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/lsq));
+  return Math.hypot(px-(x1+t*dx),py-(y1+t*dy));
+}
+
+// ── Renderizar canvas do editor ───────────────────────────────────
+function veDrawCanvas(key){
+  const cv=document.getElementById('veg'+key);
+  const segs=veSegs[key];
+  const {rows,cols}=veGrid[key];
+  const ds=veDrawState[key];
+  if(!cv) return;
+
+  cv.width  = cols*VE_CELL + VE_PAD*2;
+  cv.height = rows*VE_CELL + VE_PAD*2;
+  const c=cv.getContext('2d');
+  c.clearRect(0,0,cv.width,cv.height);
+
+  // Fundo
+  c.fillStyle='#FEFCF8';
+  c.fillRect(0,0,cv.width,cv.height);
+
+  // Grade de referência pontilhada
+  c.strokeStyle='rgba(180,172,162,0.45)';
+  c.lineWidth=0.5;
+  c.setLineDash([2,3]);
+  for(let r=0;r<=rows;r++){
+    c.beginPath();c.moveTo(VE_PAD,VE_PAD+r*VE_CELL);c.lineTo(VE_PAD+cols*VE_CELL,VE_PAD+r*VE_CELL);c.stroke();
+  }
+  for(let co=0;co<=cols;co++){
+    c.beginPath();c.moveTo(VE_PAD+co*VE_CELL,VE_PAD);c.lineTo(VE_PAD+co*VE_CELL,VE_PAD+rows*VE_CELL);c.stroke();
+  }
+  c.setLineDash([]);
+
+  // Nós da grade (pequenos círculos)
+  c.fillStyle='rgba(150,146,138,0.5)';
+  for(let r=0;r<=rows;r++){
+    for(let co=0;co<=cols;co++){
+      c.beginPath();
+      c.arc(VE_PAD+co*VE_CELL, VE_PAD+r*VE_CELL, 2, 0, Math.PI*2);
+      c.fill();
+    }
+  }
+
+  // Segmentos existentes
+  c.strokeStyle='#1A1714';
+  c.lineWidth=2;
+  c.lineCap='round';
+  segs.forEach(s=>{
+    c.beginPath();
+    c.moveTo(VE_PAD+s.x1*VE_CELL, VE_PAD+s.y1*VE_CELL);
+    c.lineTo(VE_PAD+s.x2*VE_CELL, VE_PAD+s.y2*VE_CELL);
+    c.stroke();
+  });
+
+  // Preview da linha em construção (modo Desenhar, ponto inicial definido)
+  if(veTool==='draw' && ds.startNode && ds.tempEnd){
+    const {nx:sx,ny:sy}=ds.startNode;
+    const {nx:ex2,ny:ey2}=ds.tempEnd;
+    c.strokeStyle='rgba(22,101,52,0.5)';
+    c.lineWidth=2;
+    c.setLineDash([6,4]);
+    c.beginPath();
+    c.moveTo(VE_PAD+sx*VE_CELL, VE_PAD+sy*VE_CELL);
+    c.lineTo(VE_PAD+ex2*VE_CELL, VE_PAD+ey2*VE_CELL);
+    c.stroke();
+    c.setLineDash([]);
+  }
+
+  // Ponto inicial selecionado (modo Desenhar)
+  if(veTool==='draw' && ds.startNode){
+    const {nx:sx,ny:sy}=ds.startNode;
+    c.fillStyle='#166534';
+    c.beginPath();
+    c.arc(VE_PAD+sx*VE_CELL, VE_PAD+sy*VE_CELL, 4.5, 0, Math.PI*2);
+    c.fill();
+  }
+
+  // Nó mais próximo do cursor (hover)
+  if(ds.hoverNode){
+    const {nx:hx,ny:hy}=ds.hoverNode;
+    c.fillStyle=veTool==='erase'?'rgba(153,27,27,0.7)':'rgba(22,101,52,0.7)';
+    c.beginPath();
+    c.arc(VE_PAD+hx*VE_CELL, VE_PAD+hy*VE_CELL, 4, 0, Math.PI*2);
+    c.fill();
+  }
+}
+
+// ── Ferramenta ativa do editor de vistas ─────────────────────────
+let veTool='draw'; // 'draw' | 'erase'
+
+function setVeTool(t){
+  veTool=t;
+  document.getElementById('veTool-draw').classList.toggle('active',t==='draw');
+  document.getElementById('veTool-erase').classList.toggle('active',t==='erase');
+  // Cancelar ponto inicial pendente ao trocar ferramenta
+  ['F','L','T'].forEach(k=>{
+    veDrawState[k].startNode=null;
+    veDrawState[k].tempEnd=null;
+  });
+  veRenderAll();
+}
+
+// ── Inicializar / recarregar canvas de uma vista ─────────────────
+function veRenderGrid(key){
+  const cv=document.getElementById('veg'+key);
+  if(!cv) return;
+
+  if(!cv._veInit){
+    cv._veInit=true;
+    cv.style.cursor='crosshair';
+
+    function canvasPx(e){
+      const r=cv.getBoundingClientRect();
+      const t=e.touches?e.touches[0]:e;
+      return{cx:(t.clientX-r.left)*(cv.width/r.width), cy:(t.clientY-r.top)*(cv.height/r.height)};
+    }
+
+    function onStart(e){
+      e.preventDefault();
+      const t=e.touches?e.touches[0]:e;
+      const {rows,cols}=veGrid[key];
+      const snap=veSnapNode(cv,t.clientX,t.clientY,rows,cols);
+      const ds=veDrawState[key];
+
+      if(veTool==='erase'){
+        // Apagar o segmento mais próximo do clique
+        const{cx,cy}=canvasPx(e.touches?{touches:e.touches}:e);
+        let bestI=-1,bestD=Infinity;
+        veSegs[key].forEach((s,i)=>{
+          const d=veSegDistPx(cx,cy,s);
+          if(d<bestD){bestD=d;bestI=i;}
+        });
+        const T=VE_CELL*0.6; // tolerância de clique
+        if(bestI>=0&&bestD<T){
+          veSegs[key].splice(bestI,1);
+          veDrawCanvas(key);
+        }
+        return;
+      }
+
+      // Modo Desenhar — dois cliques
+      if(!ds.startNode){
+        ds.startNode={nx:snap.nx,ny:snap.ny};
+        ds.tempEnd={nx:snap.nx,ny:snap.ny};
+      } else {
+        // Confirmar segmento se os pontos forem diferentes
+        const{nx:sx,ny:sy}=ds.startNode;
+        const{nx:ex2,ny:ey2}={nx:snap.nx,ny:snap.ny};
+        // Só aceitar arestas alinhadas (horizontal ou vertical)
+        if((sx===ex2||sy===ey2)&&(sx!==ex2||sy!==ey2)){
+          // Decompor em segmentos unitários
+          if(sx===ex2){
+            const mn=Math.min(sy,ey2),mx=Math.max(sy,ey2);
+            for(let y=mn;y<mx;y++) veSegs[key].push({x1:sx,y1:y,x2:sx,y2:y+1});
+          } else {
+            const mn=Math.min(sx,ex2),mx=Math.max(sx,ex2);
+            for(let x=mn;x<mx;x++) veSegs[key].push({x1:x,y1:sy,x2:x+1,y2:sy});
+          }
+        }
+        ds.startNode=null;
+        ds.tempEnd=null;
+      }
+      veDrawCanvas(key);
+    }
+
+    function onMove(e){
+      e.preventDefault();
+      const t=e.touches?e.touches[0]:e;
+      const{rows,cols}=veGrid[key];
+      const snap=veSnapNode(cv,t.clientX,t.clientY,rows,cols);
+      const ds=veDrawState[key];
+      ds.hoverNode={nx:snap.nx,ny:snap.ny};
+      if(veTool==='draw'&&ds.startNode) ds.tempEnd={nx:snap.nx,ny:snap.ny};
+      veDrawCanvas(key);
+    }
+
+    function onLeave(){
+      const ds=veDrawState[key];
+      ds.hoverNode=null;
+      veDrawCanvas(key);
+    }
+
+    cv.addEventListener('mousedown', onStart);
+    cv.addEventListener('mousemove', onMove);
+    cv.addEventListener('mouseleave', onLeave);
+    cv.addEventListener('touchstart', onStart,{passive:false});
+    cv.addEventListener('touchmove',  onMove, {passive:false});
+    cv.addEventListener('touchend',   e=>{e.preventDefault();},  {passive:false});
+  }
+
+  veDrawCanvas(key);
 }
 
 function veRenderAll(){
   veRenderGrid('F');veRenderGrid('L');veRenderGrid('T');
 }
 
-// Stop drag on mouseup anywhere
+// ── Desfazer última aresta ────────────────────────────────────────
+function veUndo(){
+  ['F','L','T'].forEach(k=>{
+    if(veSegs[k].length) veSegs[k].pop();
+    veDrawState[k].startNode=null;
+    veDrawState[k].tempEnd=null;
+  });
+  veRenderAll();
+}
+
+// ── Limpar todas as arestas ───────────────────────────────────────
+function veClear(){
+  ['F','L','T'].forEach(k=>{
+    veSegs[k]=[];
+    veDrawState[k].startNode=null;
+    veDrawState[k].tempEnd=null;
+  });
+  veRenderAll();
+}
+
+// Stop drag on mouseup anywhere (legacy veDragging — mantido por segurança)
 document.addEventListener('mouseup',()=>{veDragging=null;});
 document.addEventListener('touchend',()=>{veDragging=null;});
 
@@ -2415,6 +2792,15 @@ function veResize(key,op){
     while(ve.F.length>nrL)ve.F.pop();
     ve.T.forEach((r,ri)=>{/* VS rows=Y, unaffected by Z change */});
   }
+  // Sync veGrid dimensions (veSegs preserved — user's drawn lines stay)
+  ['F','L','T'].forEach(k=>{
+    veGrid[k]={rows:ve[k].length, cols:ve[k][0].length};
+    // Clip segments that fall outside new bounds
+    veSegs[k]=veSegs[k].filter(s=>
+      s.x1>=0&&s.x1<=veGrid[k].cols&&s.x2>=0&&s.x2<=veGrid[k].cols&&
+      s.y1>=0&&s.y1<=veGrid[k].rows&&s.y2>=0&&s.y2<=veGrid[k].rows
+    );
+  });
   veRenderAll();
 }
 
@@ -2424,6 +2810,11 @@ function veResetGrids(){
   ve.F=gridClone(gridNorm(ex.front));
   ve.L=gridClone(gridNorm(ex.left));
   ve.T=gridClone(gridNorm(ex.top));
+  ['F','L','T'].forEach(k=>{
+    veGrid[k]={rows:ve[k].length,cols:ve[k][0].length};
+    veSegs[k]=gridToSegs(ve[k]);
+    veDrawState[k]={startNode:null,tempEnd:null,hoverNode:null};
+  });
   delete customViews[curEx];
   document.getElementById('veBtnReset').style.display='none';
   const vbr=document.getElementById('viewsBadge');
@@ -2435,18 +2826,19 @@ function veResetGrids(){
 
 // ── Save edited views ──────────────────────────────────────────────
 function veSaveEdit(){
-  // ── Tornar as vistas editadas o novo original permanente ──────────
+  // Converter segmentos → grades para salvar em EX[curEx]
+  ['F','L','T'].forEach(k=>{
+    const{rows,cols}=veGrid[k];
+    ve[k]=segsToGrid(veSegs[k],rows,cols);
+  });
   EX[curEx].front=gridClone(ve.F);
   EX[curEx].left =gridClone(ve.L);
   EX[curEx].top  =gridClone(ve.T);
-  // Limpar customViews — não é mais necessário, o original foi atualizado
   delete customViews[curEx];
-  // Renderizar vistas atualizadas
   drawViews(EX[curEx]);
   document.getElementById('veBtnReset').style.display='none';
   document.getElementById('veEditNote').innerHTML='✅ Vistas de <b>'+EX[curEx].name+'</b> salvas como nova referência.';
   document.getElementById('veEditNote').style.color='var(--gn)';
-  // Ocultar badge (não há mais customização pendente)
   const vbadge=document.getElementById('viewsBadge');
   if(vbadge)vbadge.classList.remove('show');
   setTimeout(closeViewEditor,900);
@@ -2619,10 +3011,20 @@ window.addEventListener('load',()=>{
   cv.addEventListener('wheel',onWheel,{passive:false});
   cv.addEventListener('touchstart',onDown,{passive:false});cv.addEventListener('touchmove',onMove,{passive:false});cv.addEventListener('touchend',onUp,{passive:false});
   buildSel();selEx(0);
+  // Ajustar altura da faixa inferior para acomodar as vistas renderizadas
+  function fitStrip(){
+    const vg=document.querySelector('.vgrid');
+    const sl=document.querySelector('.strip-left');
+    if(!vg||!sl)return;
+    const vH=vg.offsetHeight+20; // vgrid height + padding top+bottom
+    const slH=sl.scrollHeight;
+    const h=Math.max(vH,slH,120);
+    document.querySelector('.lpanel').style.height=h+'px';
+  }
+  setTimeout(fitStrip,60); // aguarda vistas renderizarem
   resizeCv();
-  new ResizeObserver(resizeCv).observe(document.getElementById('isoWrap'));
+  new ResizeObserver(()=>{fitStrip();resizeCv();}).observe(document.getElementById('isoWrap'));
 });
--e 
 </script>
 </body>
 </html>
