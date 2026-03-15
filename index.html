@@ -1359,487 +1359,59 @@ const EX=[
  front:[[1,1],[1,1],[1,1],[1,1]],top:[[1,1],[1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
  edges:visEdgesBox(0,0,0,2,2,4)},
 
-// ─── GRUPO 2: Degraus e Rampas (11–20) ────────────────────────────
-{id:11,name:'Degrau Simples',
- desc:'Um degrau. Vista frontal em "L" invertido.',
- front:[[1,1],[0,1]],top:[[1,1],[1,1]],left:[[1,0],[1,1]],
+// ─── GRUPO 2: Exemplos do livro ───────────────────────────────────
+// Exemplo A (pág.1 topo): escada 2 degraus + cubo pequeno no topo esq.
+// V.Frontal: L invertido 2×2 + col esq altura 3; V.Lateral dir: degrau descendente; V.Superior: 2×2
+{id:11,name:'Exemplo A — Degrau com Bloco',
+ desc:'Sólido com dois degraus ascendentes e um bloco adicional no topo esquerdo. Do livro de exemplos.',
+ front:[[1,1],[0,1],[0,1]],
+ top:[[1,1],[1,1]],
+ left:[[0,1],[1,1],[1,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(1,0,1,2,2,2),visEdgesBox(0,0,2,1,2,3))},
+
+// Exemplo B (pág.1 meio): escada 2 degraus largos; V.Frontal: degrau; V.Lateral: triângulo/rampa; V.Superior: 2×2
+{id:12,name:'Exemplo B — Escada com Rampa',
+ desc:'Dois degraus com perfil de rampa na vista lateral. Do livro de exemplos.',
+ front:[[1,1],[0,1]],
+ top:[[1,1],[1,1]],
+ left:[[0,1],[1,1]],
  edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(1,0,1,2,2,2))},
 
-{id:12,name:'Degrau Duplo',
- desc:'Dois degraus ascendentes.',
- front:[[1,0,0],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,0,1],[0,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,2,3,2),visEdgesBox(0,0,2,1,3,3))},
-
-{id:13,name:'Degrau Triplo',
- desc:'Três degraus — escada com 4 níveis de altura.',
- front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
- top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
- left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,3,3,2),visEdgesBox(0,0,2,2,3,3),visEdgesBox(0,0,3,1,3,4))},
-
-{id:14,name:'Degrau Largo',
- desc:'Degrau com largura dupla em cada nível.',
- front:[[1,1,0,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,2,2,2))},
-
-{id:15,name:'Degrau Fundo Duplo',
- desc:'Degrau simples com profundidade 3.',
- front:[[1,1],[0,1]],top:[[1,1],[1,1],[1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,2,3,1),visEdgesBox(1,0,1,2,3,2))},
-
-{id:16,name:'Escada 4 Degraus × 3 Prof.',
- desc:'Escada com 4 degraus. Cada degrau tem 1×3×1.',
- front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
- top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
- left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,3,3,2),visEdgesBox(0,0,2,2,3,3),visEdgesBox(0,0,3,1,3,4))},
-
-{id:17,name:'Pirâmide 3 Degraus',
- desc:'Pirâmide degraus 5×3, 3×3, 1×3.',
- front:[[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1]],
- top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
+// Exemplo C (pág.1 base): escada 3 degraus descendentes à direita
+// V.Frontal: degrau triplo; V.Lateral: triângulo; V.Superior: 3×2
+{id:13,name:'Exemplo C — Escada 3 Degraus',
+ desc:'Três degraus descendentes. Vista lateral com perfil triangular. Do livro de exemplos.',
+ front:[[1,1,1],[0,1,1],[0,0,1]],
+ top:[[1,1,1],[1,1,1]],
  left:[[0,0,1],[0,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(1,0,1,4,3,2),visEdgesBox(2,0,2,3,3,3))},
-
-{id:18,name:'Cunha 3×2',
- desc:'Degrau diagonal — rampa em dois níveis sobre base 3×2.',
- front:[[1,0,0],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,0,1],[0,1,1],[1,1,1]],
  edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,2,2,2),visEdgesBox(0,0,2,1,2,3))},
 
-{id:19,name:'Degrau Invertido',
- desc:'Degrau descendo da esquerda para a direita.',
- front:[[0,1],[1,1]],top:[[1,1],[1,1]],left:[[0,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(0,0,1,1,2,2))},
-
-{id:20,name:'Rampa Suave 4 Níveis',
- desc:'Quatro blocos 1×2×1 empilhados em escada ascendente.',
- front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
- top:[[1,1,1,1],[1,1,1,1]],
- left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,3,2,2),visEdgesBox(0,0,2,2,2,3),visEdgesBox(0,0,3,1,2,4))},
-
-// ─── GRUPO 3: Formas em L, T, U, H (21–35) ────────────────────────
-{id:21,name:'Bloco em L (planta)',
- desc:'Vista superior em "L". Dois blocos unidos em ângulo reto.',
- front:[[1,1,1],[1,0,0]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,3,1,2))},
-
-{id:22,name:'Bloco em T (planta)',
- desc:'Vista superior em "T". Barra horizontal + vertical.',
- front:[[1,1,1],[0,1,0]],top:[[1,1,1],[0,1,0],[0,1,0]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,3,1,2),visEdgesBox(1,1,0,2,3,1))},
-
-{id:23,name:'Bloco em U (frontal)',
- desc:'Vista frontal em "U" — dois pilares ligados por base.',
- front:[[1,0,1],[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3),visEdgesBox(2,0,1,3,2,3))},
-
-{id:24,name:'Bloco em H (frontal)',
- desc:'Vista frontal em "H" — dois pilares conectados por travessa central.',
- front:[[1,0,1],[1,1,1],[1,0,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(1,0,1,2,2,2))},
-
-{id:25,name:'Suporte em L Vertical',
- desc:'Perfil em L: pilar 1×2×3 + base 3×2×1.',
- front:[[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,0],[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3))},
-
-{id:26,name:'Suporte em L Invertido',
- desc:'Perfil em L invertido: pilar direito + base esquerda.',
- front:[[0,0,1],[0,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,1],[0,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(2,0,1,3,2,3))},
-
-{id:27,name:'Cruz (planta)',
- desc:'Planta em forma de cruz: barra 1×3 + barra 3×1.',
- front:[[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[1,1,1]],
- edges:combineVis(visEdgesBox(1,0,0,2,3,1),visEdgesBox(0,1,0,3,2,1))},
-
-{id:28,name:'Bloco em Z (planta)',
- desc:'Vista superior em "Z" — blocos nos cantos opostos conectados.',
- front:[[1,1,1],[1,1,1]],top:[[1,1,0],[1,1,1],[0,1,1]],left:[[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,2,2,2),visEdgesBox(0,1,0,3,2,2),visEdgesBox(1,2,0,3,3,2))},
-
-{id:29,name:'Bloco em S (planta)',
- desc:'Vista superior em "S" — variação do bloco Z.',
- front:[[1,1,1],[1,1,1]],top:[[0,1,1],[1,1,1],[1,1,0]],left:[[1,1],[1,1]],
- edges:combineVis(visEdgesBox(1,0,0,3,2,2),visEdgesBox(0,1,0,3,2,2),visEdgesBox(0,2,0,2,3,2))},
-
-{id:30,name:'U Deitado (planta)',
- desc:'Vista superior em "U" — dois blocos laterais com base frontal.',
- front:[[1,1,1],[1,1,1]],top:[[1,0,1],[1,1,1]],left:[[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(1,0,0,2,1,2))},
-
-{id:31,name:'Bloco em F (frontal)',
- desc:'Vista frontal em "F" — duas prateleiras à esquerda.',
- front:[[1,1,1],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,2,2,2),visEdgesBox(0,0,2,3,2,3))},
-
-{id:32,name:'Bloco em E (frontal)',
- desc:'Vista frontal em "E" — três prateleiras horizontais.',
- front:[[1,1,1],[1,0,0],[1,1,1],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,2,3,2,3),visEdgesBox(0,0,4,3,2,5))},
-
-{id:33,name:'Bloco em C (frontal)',
- desc:'Vista frontal em "C" — abertura central à direita.',
- front:[[1,1,1],[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,3,3,2,4))},
-
-{id:34,name:'Bloco em P (frontal)',
- desc:'Vista frontal em "P" — fechado no topo e esquerda.',
- front:[[1,1,1],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,2,2,3),visEdgesBox(0,0,2,3,2,3))},
-
-{id:35,name:'Bloco em I (frontal)',
- desc:'Vista frontal em "I" — base, topo e pilar central.',
- front:[[1,1,1],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(1,0,1,2,2,2),visEdgesBox(0,0,2,3,2,3))},
-
-// ─── GRUPO 4: Recortes e Entalhes (36–50) ─────────────────────────
-{id:36,name:'Recorte Canto Sup. Dir.',
- desc:'Bloco 3×2×3 com recorte 1×2×1 no canto superior direito frontal.',
- front:[[1,1,0],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(0,0,2,2,2,3))},
-
-{id:37,name:'Recorte Canto Sup. Esq.',
- desc:'Bloco 3×2×3 com recorte 1×2×1 no canto superior esquerdo.',
- front:[[0,1,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(1,0,2,3,2,3))},
-
-{id:38,name:'Entalhe Central Frontal',
- desc:'Bloco 3×2×3 com entalhe 1×2×1 no centro da face frontal.',
- front:[[1,0,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(0,0,2,1,2,3),visEdgesBox(2,0,2,3,2,3))},
-
-{id:39,name:'Entalhe Lateral Direito',
- desc:'Bloco 3×3×2 com recorte no lado direito (x=2 a 3).',
- front:[[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1],[0,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,2,3,2))},
-
-{id:40,name:'Dois Recortes Topo',
- desc:'Bloco 4×2×2 com dois recortes 1×2×1 nos cantos do topo.',
- front:[[0,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(1,0,1,3,2,2))},
-
-{id:41,name:'Recorte Profundo',
- desc:'Bloco 3×3×2 com recorte 1×1×2 no canto frontal esquerdo.',
- front:[[0,1,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(1,0,0,3,3,2))},
-
-{id:42,name:'Chanfro Direito',
- desc:'Bloco 2×2×3 com chanfro escalonado à direita.',
- front:[[1,1],[1,1],[1,1]],top:[[1,1],[1,1]],left:[[0,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,2,2,2),visEdgesBox(0,0,2,2,2,3))},
-
-{id:43,name:'Bloco com Pilastra',
- desc:'Base 3×2×1 com pilastra 1×2×3 na extremidade esquerda.',
- front:[[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[0,1],[0,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3))},
-
-{id:44,name:'Bloco Duplo Recorte',
- desc:'Bloco 4×2×3 com recorte 1×2×1 em cada extremidade do topo.',
- front:[[0,1,1,0],[1,1,1,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,2),visEdgesBox(1,0,2,3,2,3))},
-
-{id:45,name:'Recorte de Canto Inferior',
- desc:'Bloco 3×2×3 com recorte 1×2×1 no canto inferior frontal direito.',
- front:[[1,1,1],[1,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,2,2,3),visEdgesBox(2,0,1,3,2,3))},
-
-{id:46,name:'Pilar com Base Alargada',
- desc:'Pilar 1×1×3 sobre base 3×3×1 no canto frontal esquerdo.',
- front:[[1,0,0],[1,0,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,0,1],[0,0,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,1,1,3))},
-
-{id:47,name:'Dois Pilares sobre Base',
- desc:'Base 4×2×1 com pilares 1×2×3 nos cantos esquerdo e direito.',
- front:[[1,0,0,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,1,2,3),visEdgesBox(3,0,1,4,2,3))},
-
-{id:48,name:'Bloco Terraço',
- desc:'Dois andares em "L" — térreo 3×2×1 + primeiro 2×2×1.',
- front:[[0,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(1,0,1,3,2,2))},
-
-{id:49,name:'Sólido com Varanda',
- desc:'Bloco 3×3×2 com bloco 3×1×1 avançando na frente.',
- front:[[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(0,3,0,3,4,1))},
-
-{id:50,name:'Bloco com Nicho Central',
- desc:'Bloco 3×3×3 com recorte central na face frontal.',
- front:[[1,1,1],[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1,1],[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,1,3,2),visEdgesBox(2,0,1,3,3,2),visEdgesBox(0,0,2,3,3,3))},
-
-// ─── GRUPO 5: Compostos e Combinados (51–65) ──────────────────────
-{id:51,name:'Mesa Simples',
- desc:'Tampo 4×3×1 sobre quatro pés 1×1×2 nos cantos.',
- front:[[1,0,0,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,1,1,3),visEdgesBox(3,0,1,4,1,3),visEdgesBox(0,2,1,1,3,3),visEdgesBox(3,2,1,4,3,3))},
-
-{id:52,name:'Banco Simples',
- desc:'Assento 3×2×1 sobre dois pés 1×2×2.',
- front:[[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,3),visEdgesBox(2,0,1,3,2,3))},
-
-{id:53,name:'Arco Simples',
- desc:'Dois pilares 1×2×3 ligados por viga 1×2×1 no topo.',
- front:[[1,0,1],[1,0,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(1,0,2,2,2,3))},
-
-{id:54,name:'Caixa sem Tampa',
- desc:'Caixa 3×3×2 com interior vazio.',
- front:[[1,1,1],[1,0,1]],top:[[1,1,1],[1,0,1],[1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,1,3,2),visEdgesBox(2,0,1,3,3,2))},
-
-{id:55,name:'Base + Pilar Central',
- desc:'Plataforma 3×3×1 com pilar 1×1×2 no centro.',
- front:[[0,1,0],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,3))},
-
-{id:56,name:'Dois Cubos Empilhados',
- desc:'Cubo 2×2×2 sobre outro cubo 2×2×2.',
- front:[[1,1],[1,1],[1,1],[1,1]],top:[[1,1],[1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
- edges:visEdgesBox(0,0,0,2,2,4)},
-
-{id:57,name:'Dois Blocos Lado a Lado',
- desc:'Bloco 2×2×3 junto a bloco 2×2×2 — alturas diferentes.',
- front:[[1,1],[1,1],[0,1]],top:[[1,1],[1,1]],left:[[1,1],[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,2,2,2),visEdgesBox(2,0,0,4,2,3))},
-
-{id:58,name:'Plataforma com Caixote',
- desc:'Base 4×3×1 com caixote 2×2×2 centralizado sobre ela.',
- front:[[0,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(1,0,1,3,3,3))},
-
-{id:59,name:'Escada com Patamar',
- desc:'Dois degraus + patamar horizontal no topo.',
- front:[[0,1,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,1,1],[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(0,0,1,3,3,2),visEdgesBox(0,0,2,2,3,3))},
-
-{id:60,name:'Caixote com Divisória',
- desc:'Bloco 4×2×3 com divisória vertical x=2.',
- front:[[1,0,0,1],[1,1,1,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,3),visEdgesBox(2,0,0,2,2,3))},
-
-{id:61,name:'Porta Simples',
- desc:'Quadro retangular 3×1×4 com abertura 1×1×2 na base central.',
- front:[[1,0,1],[1,0,1],[1,1,1],[1,1,1]],top:[[1,1,1]],left:[[1],[1],[1],[1]],
- edges:combineVis(visEdgesBox(0,0,0,3,1,2),visEdgesBox(0,0,2,1,1,4),visEdgesBox(2,0,2,3,1,4))},
-
-{id:62,name:'Pirâmide 4 Degraus',
- desc:'Pirâmide escalonada 4 níveis: 7,5,3,1 de largura.',
- front:[[0,0,0,1,0,0,0],[0,0,1,1,1,0,0],[0,1,1,1,1,1,0],[1,1,1,1,1,1,1]],
- top:[[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
- left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,7,4,1),visEdgesBox(1,0,1,6,4,2),visEdgesBox(2,0,2,5,4,3),visEdgesBox(3,0,3,4,4,4))},
-
-{id:63,name:'Torre com Chapéu',
- desc:'Torre 1×1×3 com bloco 3×3×1 no topo.',
- front:[[0,1,0],[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,4))},
-
-{id:64,name:'Dois Blocos em L',
- desc:'Bloco em L com o mesmo perfil em dois níveis de altura.',
- front:[[1,1,1],[1,1,1],[1,0,0],[1,0,0]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,0],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(0,0,2,1,2,4))},
-
-{id:65,name:'Bloco Composto Simétrico',
- desc:'Dois blocos em L simétricos formando um "W" em planta.',
- front:[[1,1,1,1],[1,0,0,1]],top:[[1,0,0,1],[1,1,1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,1,1,1,2,2),visEdgesBox(3,1,1,4,2,2))},
-
-// ─── GRUPO 6: Construções Técnicas (66–80) ────────────────────────
-{id:66,name:'Suporte em T',
- desc:'Base horizontal 3×1×1 + pilar vertical central 1×1×3.',
- front:[[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1]],left:[[1],[1],[1]],
- edges:combineVis(visEdgesBox(0,0,0,3,1,1),visEdgesBox(1,0,1,2,1,3))},
-
-{id:67,name:'Perfil H Deitado',
- desc:'Seção H deitada: duas bases e pilar central vertical.',
- front:[[1,1,1],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(1,0,1,2,2,2),visEdgesBox(0,0,2,3,2,3))},
-
-{id:68,name:'Bloco Chanfrado Bilateral',
- desc:'Bloco 3×2×3 com chanfro escalonado em ambos lados do topo.',
- front:[[0,1,0],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,2),visEdgesBox(1,0,2,2,2,3))},
-
-{id:69,name:'Plataforma com Ressalto',
- desc:'Base 4×2×1 com ressalto 2×2×1 no centro.',
- front:[[0,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(1,0,1,3,2,2))},
-
-{id:70,name:'Bloco com Recesso Traseiro',
- desc:'Bloco 3×3×2 com recesso 1×1×2 no fundo (y=2 a 3).',
- front:[[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,0],[1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(2,1,0,3,2,2))},
-
-{id:71,name:'Caixote Aberto Frontal',
- desc:'Caixa 3×2×3 aberta na frente — paredes laterais, topo e fundo.',
- front:[[1,0,1],[1,0,1],[1,0,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(0,1,0,3,2,3))},
-
-{id:72,name:'Bloco em O (planta)',
- desc:'Vista superior em "O" — quadrado com buraco central.',
- front:[[1,1,1],[1,1,1]],top:[[1,1,1],[1,0,1],[1,1,1]],left:[[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,2),visEdgesBox(1,1,0,2,2,2))},
-
-{id:73,name:'Dois Andares Desalinhados',
- desc:'Andar inferior 4×2×1 + andar superior 3×2×1 deslocado à direita.',
- front:[[0,1,1,1],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(1,0,1,4,2,2))},
-
-{id:74,name:'Bloco Tabuleiro',
- desc:'Quatro blocos 2×2×1 em tabuleiro 4×4 alternando altura.',
- front:[[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[1,1,1,1]],
- edges:visEdgesBox(0,0,0,4,4,1)},
-
-{id:75,name:'Bloco Escadinha Lateral',
- desc:'Rampa lateral: blocos 1×1×1 escalonados na profundidade.',
- front:[[1,1,1]],top:[[1,0,0],[1,1,0],[1,1,1]],left:[[0,0,1],[0,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,1,1),visEdgesBox(0,1,0,3,2,1),visEdgesBox(0,2,0,3,3,1))},
-
-{id:76,name:'Sólido em Z Vertical',
- desc:'Blocos em z: inferior frontal 2×1×1 + meio 2×1×1 + superior traseiro 2×1×1.',
- front:[[1,1],[1,1],[1,1]],top:[[1,1]],left:[[1],[1],[1]],
- edges:visEdgesBox(0,0,0,2,1,3)},
-
-{id:77,name:'Bloco Bipartido',
- desc:'Dois blocos 2×2×2 justapostos na profundidade (total 2×4×2).',
- front:[[1,1],[1,1]],top:[[1,1],[1,1],[1,1],[1,1]],left:[[1,1],[1,1],[1,1],[1,1]],
- edges:visEdgesBox(0,0,0,2,4,2)},
-
-{id:78,name:'Bloco com Orelhas',
- desc:'Bloco central 2×1×2 com dois ressaltos laterais 1×1×1.',
- front:[[1,1,1],[0,1,0]],top:[[1,1,1]],left:[[1],[1]],
- edges:combineVis(visEdgesBox(0,0,0,3,1,1),visEdgesBox(1,0,1,2,1,2))},
-
-{id:79,name:'Bloco com Pedestal',
- desc:'Pedestal 3×3×1 + bloco 1×1×2 centralizado + bloco 1×1×1 no topo.',
- front:[[0,1,0],[0,1,0],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[0,1,0],[0,1,0],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,4))},
-
-{id:80,name:'Sólido Composto Avançado',
- desc:'Base 4×3×1 + bloco 2×2×2 canto frontal esq. + bloco 1×3×3 canto traseiro dir.',
- front:[[0,0,1,0],[0,0,1,0],[1,1,1,0],[1,1,1,1]],top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],left:[[0,0,1],[0,0,1],[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,2,2,3),visEdgesBox(3,0,1,4,3,4))},
-
-// ─── GRUPO 7: Desafios (81–100) ───────────────────────────────────
-{id:81,name:'Desafio: Parapeito',
- desc:'Bloco 4×1×1 com dois pilares 1×1×2 nas extremidades.',
- front:[[1,0,0,1],[1,1,1,1]],top:[[1,1,1,1]],left:[[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,4,1,1),visEdgesBox(0,0,1,1,1,3),visEdgesBox(3,0,1,4,1,3))},
-
-{id:82,name:'Desafio: Cruz 3D',
- desc:'Cruz em planta (1×3 + 3×1) com altura 2.',
- front:[[1,1,1],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(1,0,0,2,3,2),visEdgesBox(0,1,0,3,2,2))},
-
-{id:83,name:'Desafio: Pórtico',
- desc:'Dois pilares 1×2×4 com viga 4×2×1 no topo (vão livre).',
- front:[[1,1,1,1],[1,0,0,1],[1,0,0,1],[1,0,0,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0],[1,0],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,4,2,1),visEdgesBox(0,0,1,1,2,4),visEdgesBox(3,0,1,4,2,4))},
-
-{id:84,name:'Desafio: Anfiteatro',
- desc:'Arquibancada com 3 degraus, largura 5 e profundidade 3.',
- front:[[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1]],
- top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
- left:[[0,0,1],[0,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(1,0,1,4,3,2),visEdgesBox(2,0,2,3,3,3))},
-
-{id:85,name:'Desafio: Cogumelo',
- desc:'Haste 1×1×2 com chapéu 3×3×1 no topo.',
- front:[[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[0,1,0],[0,1,0],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,3))},
-
-{id:86,name:'Desafio: Chaminé',
- desc:'Base 3×3×1 + corpo 2×2×3 + chapéu 3×3×1 no topo.',
- front:[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],top:[[1,1,1],[1,1,1],[1,1,1]],left:[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,4),visEdgesBox(0,0,4,3,3,5))},
-
-{id:87,name:'Desafio: Bloco L×2',
- desc:'Dois blocos em L empilhados em espelho.',
- front:[[1,1,1],[1,0,0],[1,1,1],[1,0,0]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,0],[1,1],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,3,2,1),visEdgesBox(0,0,1,1,2,2),visEdgesBox(0,0,2,3,2,3),visEdgesBox(0,0,3,1,2,4))},
-
-{id:88,name:'Desafio: Catedral',
- desc:'Base 5×3×1 + torre central 1×1×4 + dois pináculos 1×1×2.',
- front:[[0,0,1,0,0],[0,0,1,0,0],[0,1,1,1,0],[0,1,1,1,0],[1,1,1,1,1]],
- top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
- left:[[0,0,0,1],[0,0,0,1],[0,0,1,1],[0,0,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(1,0,1,4,3,3),visEdgesBox(2,0,3,3,3,5))},
-
-{id:89,name:'Desafio: Escada em U',
- desc:'Escada que sobe e desce — dois lances em oposição.',
- front:[[1,1,1,1],[0,1,1,1],[0,0,1,1],[0,0,0,1]],
- top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
- left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,3,0,4,4,1),visEdgesBox(0,2,1,4,4,2),visEdgesBox(0,1,2,4,4,3),visEdgesBox(0,0,3,4,4,4))},
-
-{id:90,name:'Desafio: Ponte',
- desc:'Dois pilares 1×2×3 com arco de viga 4×2×1 no topo — vão livre.',
- front:[[1,1,1,1],[1,0,0,1],[1,0,0,1]],top:[[1,1,1,1],[1,1,1,1]],left:[[1,1],[1,0],[1,0]],
- edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(3,0,0,4,2,3),visEdgesBox(0,0,2,4,2,3))},
-
-{id:91,name:'Desafio: Castelo',
- desc:'Base 5×3×1 + muralha 5×1×2 na frente + torre 1×3×3 no centro.',
- front:[[0,0,1,0,0],[1,1,1,1,1],[1,1,1,1,1]],top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],left:[[0,0,1],[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,5,3,1),visEdgesBox(0,0,1,5,1,3),visEdgesBox(2,0,1,3,3,4))},
-
-{id:92,name:'Desafio: Bloco em N',
- desc:'Vista frontal em "N" — dois pilares com diagonal interna.',
- front:[[1,1,1],[1,1,1],[1,1,1]],top:[[1,1,1],[1,1,1]],left:[[1,1],[1,1],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,1,2,3),visEdgesBox(2,0,0,3,2,3),visEdgesBox(1,0,0,2,2,3))},
-
-{id:93,name:'Desafio: Edifício',
- desc:'Base larga 4×3×1 + dois andares 4×2×1 + cobertura 4×1×1.',
- front:[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]],
- top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
- left:[[1,1,1],[1,1,1],[1,1,1],[1,1,1]],
- edges:visEdgesBox(0,0,0,4,3,4)},
-
-{id:94,name:'Desafio: Pedra de Xadrez',
- desc:'Peça de xadrez estilizada: base 3×3×1 + pescoço 1×1×2 + cabeça 2×2×1.',
- front:[[0,1,1],[0,1,0],[0,1,0],[1,1,1]],top:[[0,1,0],[1,1,1],[0,1,0]],left:[[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,3,3,1),visEdgesBox(1,1,1,2,2,3),visEdgesBox(0,0,3,2,2,4))},
-
-{id:95,name:'Desafio: Escada Caracol',
- desc:'Quatro degraus em espiral — cada degrau girado 1 unidade.',
- front:[[1,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,1,1]],
- top:[[1,1,1,1],[0,1,1,1],[0,0,1,1],[0,0,0,1]],
- left:[[0,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,1,1),visEdgesBox(0,1,1,3,2,2),visEdgesBox(0,2,2,2,3,3),visEdgesBox(0,3,3,1,4,4))},
-
-{id:96,name:'Desafio: Bloco Xadrez 2×2',
- desc:'Quatro blocos alternados de altura 1 e 2 formando tabuleiro.',
- front:[[1,1],[0,1]],top:[[1,1],[1,1]],left:[[1,0],[1,1]],
- edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(1,0,1,2,2,2))},
-
-{id:97,name:'Desafio: Bloco Diamante',
- desc:'Forma octogonal aproximada com 4 recortes de canto.',
- front:[[0,1,1,1,0],[1,1,1,1,1],[0,1,1,1,0]],top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],left:[[0,1,1],[1,1,1],[0,1,1]],
- edges:combineVis(visEdgesBox(0,1,0,5,2,1),visEdgesBox(1,0,0,4,3,1),visEdgesBox(1,0,1,4,3,2),visEdgesBox(0,1,1,5,2,3))},
-
-{id:98,name:'Desafio: Arranha-Céu',
- desc:'Edifício escalonado: base 5×3×2 + corpo 3×2×3 + topo 1×1×2.',
- front:[[0,0,1,0,0],[0,1,1,1,0],[0,1,1,1,0],[0,1,1,1,0],[1,1,1,1,1],[1,1,1,1,1]],
- top:[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]],
- left:[[0,0,1],[0,1,1],[0,1,1],[0,1,1],[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,5,3,2),visEdgesBox(1,0,2,4,2,5),visEdgesBox(2,0,5,3,1,7))},
-
-{id:99,name:'Desafio: Sólido Complexo',
- desc:'Base 4×4×1 + bloco 2×2×2 em (1,1) + pilar 1×1×4 em (0,0) + bloco 2×4×1 em z=3.',
- front:[[0,0,1,1],[0,0,1,1],[1,0,1,1],[1,0,1,1],[1,1,1,1]],
- top:[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]],
- left:[[0,0,0,1],[0,0,0,1],[0,0,1,1],[1,1,1,1],[1,1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,4,1),visEdgesBox(1,1,1,3,3,3),visEdgesBox(0,0,1,1,1,5))},
-
-{id:100,name:'Desafio Final: Complexo',
- desc:'Sólido máximo: base + escada lateral + torre + ressaltos — máximo desafio!',
- front:[[0,0,1,0],[0,1,1,0],[1,1,1,1],[1,1,1,1]],
- top:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],
- left:[[0,0,1],[0,1,1],[1,1,1],[1,1,1]],
- edges:combineVis(visEdgesBox(0,0,0,4,3,1),visEdgesBox(0,0,1,4,3,2),visEdgesBox(2,0,2,3,3,4),visEdgesBox(2,0,3,3,3,4))},
+// Exemplo D (pág.2 topo): bloco com recorte em L no topo frontal
+// V.Frontal: degrau invertido topo; V.Lateral: recorte em L; V.Superior: 2×2 dividido
+{id:14,name:'Exemplo D — Bloco Recortado em L',
+ desc:'Bloco 3×2×2 com recorte em L no canto superior frontal. Do livro de exemplos.',
+ front:[[0,1],[1,1],[1,1]],
+ top:[[1,1],[1,1]],
+ left:[[1,1],[0,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,2),visEdgesBox(1,0,2,2,2,3))},
+
+// Exemplo E (pág.2 meio): sólido escalonado com recorte — dois cubos nível + degrau com entalhe
+// V.Frontal: degrau; V.Lateral dir: degrau com linha interna tracejada; V.Superior: 3 cols
+{id:15,name:'Exemplo E — Degrau com Entalhe',
+ desc:'Escada de dois degraus com entalhe vertical na face lateral. Do livro de exemplos.',
+ front:[[1,0],[1,1]],
+ top:[[1,1],[1,1],[1,1]],
+ left:[[1,1],[0,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,3,1),visEdgesBox(1,0,1,2,3,2))},
+
+// Exemplo F (pág.2 base): bloco com recorte em L profundo (quina removida)
+// V.Frontal: L; V.Lateral: L; V.Superior: quadrado com linha tracejada no meio
+{id:16,name:'Exemplo F — Bloco com Quina Removida',
+ desc:'Bloco cúbico com uma quina inferior removida, gerando linha oculta na vista superior. Do livro de exemplos.',
+ front:[[1,1],[1,1]],
+ top:[[1,1],[1,1]],
+ left:[[1,1],[0,1]],
+ edges:combineVis(visEdgesBox(0,0,0,2,2,1),visEdgesBox(0,0,1,2,2,2))},
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -2913,7 +2485,7 @@ function updProg(){
   let tip='';
   if(avg<.5)tip='📌 Identifique X (largura→V.F.), Y (prof→V.L.E.), Z (altura→ambas) antes de desenhar.';
   else if(avg<.8)tip='📌 Boa evolução! Lembre: linhas paralelas ao mesmo eixo isométrico são paralelas entre si.';
-  else tip='🌟 Excelente! Tente os exercícios 81–100 para máximo desafio.';
+  else tip='🌟 Excelente! Tente os exemplos do livro (11–16) para mais desafio.';
   document.getElementById('pgTips').innerHTML=`<p style="font-size:12px;color:var(--ink2);">${tip}</p>`;
 }
 
